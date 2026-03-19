@@ -1,6 +1,7 @@
 import Navbar from "@/components/Navbar";
 import HeroCarousel from "@/components/HeroCarousel";
 import WhoWeAre from "@/components/WhoWeAre";
+import InstagramFeed from "@/components/InstagramFeed";
 import VolunteerCTA from "@/components/VolunteerCTA";
 import FiscalSponsorship from "@/components/FiscalSponsorship";
 import DonateSection from "@/components/DonateSection";
@@ -13,6 +14,7 @@ const Index = () => {
       <Navbar />
       <HeroCarousel />
       <WhoWeAre />
+      <InstagramFeed />
       <VolunteerCTA />
       <FiscalSponsorship />
       <DonateSection />
