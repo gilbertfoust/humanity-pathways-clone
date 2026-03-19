@@ -1,6 +1,10 @@
-import { useEffect, useRef, useState, useMemo, useCallback } from "react";
-import createGlobe from "cobe";
+import { useEffect, useRef, useState, useMemo } from "react";
+import mapboxgl from "mapbox-gl";
+import "mapbox-gl/dist/mapbox-gl.css";
 import { Search } from "lucide-react";
+
+mapboxgl.accessToken =
+  "pk.eyJ1IjoiZ2lsYmVydGZvdXN0IiwiYSI6ImNtZTIyYnI1cDBtdXIyaW9saWI5bmV5cTMifQ.NZE2WIrkVbvVoopIaPXmkQ";
 
 type TeamMember = {
   name: string;
@@ -48,127 +52,152 @@ const departments = [
   "Regional", "Advisory/Nominations",
 ];
 
-function degToRad(deg: number) {
-  return (deg * Math.PI) / 180;
+function createPhotoMarkerEl(member: TeamMember): HTMLElement {
+  const el = document.createElement("div");
+  el.className = "staff-globe-marker";
+  el.style.cssText = `
+    width: 48px; height: 48px; border-radius: 50%; border: 3px solid white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3); cursor: pointer; overflow: hidden;
+    background: hsl(var(--primary)); display: flex; align-items: center; justify-content: center;
+  `;
+  if (member.img) {
+    const img = document.createElement("img");
+    img.src = member.img;
+    img.alt = member.name;
+    img.style.cssText = "width:100%;height:100%;object-fit:cover;";
+    el.appendChild(img);
+  } else {
+    const initials = member.name.split(" ").map((n) => n[0]).join("").slice(0, 2);
+    el.innerHTML = `<span style="color:white;font-weight:700;font-size:14px;">${initials}</span>`;
+  }
+  return el;
 }
 
-function Globe({ members, focusTarget }: { members: TeamMember[]; focusTarget: TeamMember | null }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const pointerInteracting = useRef<number | null>(null);
-  const pointerInteractionMovement = useRef(0);
-  const phiRef = useRef(0);
-  const thetaRef = useRef(0.3);
-  const widthRef = useRef(0);
-  const focusRef = useRef<{ phi: number; theta: number } | null>(null);
+function createClusterMarkerEl(count: number): HTMLElement {
+  const el = document.createElement("div");
+  el.style.cssText = `
+    width: 40px; height: 40px; border-radius: 50%;
+    background: rgba(255,255,255,0.85); border: 2px solid rgba(0,0,0,0.1);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2); display: flex; align-items: center;
+    justify-content: center; cursor: pointer;
+    font-weight: 600; font-size: 14px; color: #333;
+  `;
+  el.textContent = String(count);
+  return el;
+}
 
-  // Update focus target
+function MapboxGlobe({ members, focusTarget }: { members: TeamMember[]; focusTarget: TeamMember | null }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<mapboxgl.Map | null>(null);
+  const markersRef = useRef<mapboxgl.Marker[]>([]);
+
+  // Initialize map
   useEffect(() => {
-    if (focusTarget) {
-      focusRef.current = {
-        phi: degToRad(90 - focusTarget.lat),
-        theta: degToRad(-focusTarget.lng - 90),
-      };
-    }
-  }, [focusTarget]);
+    if (!containerRef.current || mapRef.current) return;
 
-  // Convert members to markers
-  const markers = useMemo(() => {
-    return members.map((m) => ({
-      location: [m.lat, m.lng] as [number, number],
-      size: m.img ? 0.08 : 0.05,
-    }));
-  }, [members]);
-
-  useEffect(() => {
-    let width = 0;
-    const onResize = () => {
-      if (canvasRef.current) {
-        width = canvasRef.current.offsetWidth;
-        widthRef.current = width;
-      }
-    };
-    window.addEventListener("resize", onResize);
-    onResize();
-
-    let animationId: number;
-
-    const globe = createGlobe(canvasRef.current!, {
-      devicePixelRatio: 2,
-      width: width * 2,
-      height: width * 2,
-      phi: 0,
-      theta: 0.3,
-      dark: 1,
-      diffuse: 3,
-      mapSamples: 16000,
-      mapBrightness: 1.2,
-      baseColor: [0.15, 0.2, 0.3],
-      markerColor: [0.9, 0.75, 0.3],
-      glowColor: [0.15, 0.2, 0.35],
-      markers,
+    const map = new mapboxgl.Map({
+      container: containerRef.current,
+      style: "mapbox://styles/mapbox/streets-v12",
+      center: [20, 20],
+      zoom: 1.8,
+      projection: "globe",
+      attributionControl: true,
     });
 
-    let rafId: number;
-    const animate = () => {
-      // Smooth focus animation
-      if (focusRef.current) {
-        const distPhi = focusRef.current.phi - phiRef.current;
-        const distTheta = focusRef.current.theta - thetaRef.current;
-        phiRef.current += distPhi * 0.08;
-        thetaRef.current += distTheta * 0.08;
-        if (Math.abs(distPhi) < 0.01 && Math.abs(distTheta) < 0.01) {
-          focusRef.current = null;
-        }
-      } else if (pointerInteracting.current === null) {
-        phiRef.current += 0.003;
-      }
+    map.addControl(new mapboxgl.NavigationControl(), "top-right");
 
-      globe.update({
-        width: widthRef.current * 2,
-        height: widthRef.current * 2,
-        phi: phiRef.current + pointerInteractionMovement.current,
-        theta: thetaRef.current,
-        markers,
+    map.on("style.load", () => {
+      map.setFog({
+        color: "rgb(186, 210, 235)",
+        "high-color": "rgb(36, 92, 223)",
+        "horizon-blend": 0.02,
+        "space-color": "rgb(40, 50, 70)",
+        "star-intensity": 0.15,
       });
+    });
 
-      rafId = requestAnimationFrame(animate);
-    };
-    rafId = requestAnimationFrame(animate);
+    mapRef.current = map;
 
     return () => {
-      cancelAnimationFrame(rafId);
-      globe.destroy();
-      window.removeEventListener("resize", onResize);
+      map.remove();
+      mapRef.current = null;
     };
-  }, [markers]);
+  }, []);
+
+  // Update markers when members change
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    // Clear old markers
+    markersRef.current.forEach((m) => m.remove());
+    markersRef.current = [];
+
+    // Simple clustering: group nearby members
+    const clusters: { members: TeamMember[]; lat: number; lng: number }[] = [];
+    const used = new Set<number>();
+    const THRESHOLD = 5; // degrees
+
+    members.forEach((m, i) => {
+      if (used.has(i)) return;
+      const group: TeamMember[] = [m];
+      used.add(i);
+      members.forEach((m2, j) => {
+        if (used.has(j)) return;
+        if (Math.abs(m.lat - m2.lat) < THRESHOLD && Math.abs(m.lng - m2.lng) < THRESHOLD) {
+          group.push(m2);
+          used.add(j);
+        }
+      });
+      const avgLat = group.reduce((s, g) => s + g.lat, 0) / group.length;
+      const avgLng = group.reduce((s, g) => s + g.lng, 0) / group.length;
+      clusters.push({ members: group, lat: avgLat, lng: avgLng });
+    });
+
+    clusters.forEach((cluster) => {
+      let el: HTMLElement;
+      if (cluster.members.length === 1) {
+        el = createPhotoMarkerEl(cluster.members[0]);
+      } else {
+        // If any member has an image, show the first one with image; otherwise show count
+        const withImg = cluster.members.find((m) => m.img);
+        if (withImg && cluster.members.length <= 2) {
+          el = createPhotoMarkerEl(withImg);
+        } else {
+          el = createClusterMarkerEl(cluster.members.length);
+        }
+      }
+
+      const marker = new mapboxgl.Marker({ element: el })
+        .setLngLat([cluster.lng, cluster.lat])
+        .addTo(map);
+
+      // Popup with names
+      const popupHtml = cluster.members
+        .map((m) => `<strong>${m.name}</strong><br/><span style="font-size:12px;color:#666">${m.title}</span>`)
+        .join("<hr style='margin:4px 0;border-color:#eee'/>");
+      marker.setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(popupHtml));
+
+      markersRef.current.push(marker);
+    });
+  }, [members]);
+
+  // Fly to focus target
+  useEffect(() => {
+    if (!focusTarget || !mapRef.current) return;
+    mapRef.current.flyTo({
+      center: [focusTarget.lng, focusTarget.lat],
+      zoom: 4,
+      duration: 1500,
+    });
+  }, [focusTarget]);
 
   return (
-    <div className="relative flex h-full w-full items-center justify-center">
-      <canvas
-        ref={canvasRef}
-        className="h-full w-full cursor-grab active:cursor-grabbing"
-        style={{ maxWidth: "100%", aspectRatio: "1" }}
-        onPointerDown={(e) => {
-          pointerInteracting.current = e.clientX - pointerInteractionMovement.current;
-          canvasRef.current!.style.cursor = "grabbing";
-        }}
-        onPointerUp={() => {
-          pointerInteracting.current = null;
-          canvasRef.current!.style.cursor = "grab";
-        }}
-        onPointerOut={() => {
-          pointerInteracting.current = null;
-          if (canvasRef.current) canvasRef.current.style.cursor = "grab";
-        }}
-        onPointerMove={(e) => {
-          if (pointerInteracting.current !== null) {
-            const delta = e.clientX - pointerInteracting.current;
-            pointerInteractionMovement.current = delta / 200;
-            phiRef.current += (delta - (pointerInteracting.current - e.clientX + delta)) * 0;
-          }
-        }}
-      />
-    </div>
+    <div
+      ref={containerRef}
+      className="h-full w-full rounded-xl"
+      style={{ minHeight: "420px" }}
+    />
   );
 }
 
@@ -212,8 +241,8 @@ export default function StaffGlobe() {
 
         <div className="flex flex-col gap-3 lg:flex-row" style={{ minHeight: "540px" }}>
           {/* Globe */}
-          <div className="flex flex-1 items-center justify-center overflow-hidden rounded-xl border border-border bg-[hsl(210,29%,12%)]" style={{ minHeight: "420px" }}>
-            <Globe members={filtered} focusTarget={focusTarget} />
+          <div className="flex-1 overflow-hidden rounded-xl border border-border" style={{ minHeight: "420px" }}>
+            <MapboxGlobe members={filtered} focusTarget={focusTarget} />
           </div>
 
           {/* Panel */}
