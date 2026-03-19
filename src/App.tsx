@@ -13,6 +13,7 @@ import HpgBlog from "./pages/HpgBlog.tsx";
 import GlobalLeadersSummit from "./pages/GlobalLeadersSummit.tsx";
 import ContactUs from "./pages/ContactUs.tsx";
 import VolunteerApplication from "./pages/VolunteerApplication.tsx";
+import SponsorshipApplication from "./pages/SponsorshipApplication.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
