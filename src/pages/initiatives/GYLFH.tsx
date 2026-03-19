@@ -52,11 +52,16 @@ export default function GYLFH() {
         </div>
       </section>
 
-      {/* Subtitle + CTA */}
+      {/* Mission + CTA */}
       <section className="bg-background py-12">
         <div className="mx-auto max-w-4xl px-4 text-center">
-          <img src={gylfhLogo} alt="GYLFH Logo" className="mx-auto mb-6 h-24 w-24 object-contain" />
-          <p className="text-muted-foreground leading-relaxed max-w-2xl mx-auto">
+          <p className="text-sm uppercase tracking-widest text-muted-foreground mb-4">
+            Youth diplomacy • Leadership • Community projects
+          </p>
+          <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">
+            Equip young leaders to serve locally, connect globally, and lead with skill.
+          </h2>
+          <p className="mt-4 text-muted-foreground leading-relaxed max-w-2xl mx-auto">
             Support training that combines diplomacy workshops, cross-cultural exchange, mentorship, and hands-on projects.
             Gifts are directed to delivery, materials, coordination, and reporting.
           </p>
