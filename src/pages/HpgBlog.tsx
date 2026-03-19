@@ -19,6 +19,12 @@ interface BlogPost {
 const TUMBLR_RSS = "https://humanitypathwaysglobal.tumblr.com/rss";
 const RSS2JSON_URL = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(TUMBLR_RSS)}`;
 
+function decodeHtml(html: string): string {
+  const tmp = document.createElement("textarea");
+  tmp.innerHTML = html;
+  return tmp.value;
+}
+
 function stripHtml(html: string): string {
   const tmp = document.createElement("div");
   tmp.innerHTML = html;
