@@ -59,6 +59,7 @@ const App = () => (
           <Route path="/seishin-plus" element={<SeishinPlus />} />
           <Route path="/cpbi" element={<CPBI />} />
           <Route path="/hpg-executive-academy" element={<HpgExecutiveAcademy />} />
+          <Route path="/hpg-onboarding-fee" element={<HpgOnboardingFee />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
