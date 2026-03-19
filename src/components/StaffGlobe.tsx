@@ -166,7 +166,7 @@ function ClusteredMarkers({ members }: { members: TeamMember[] }) {
     return () => {
       if (layerRef.current) map.removeLayer(layerRef.current);
     };
-  }, [members, map]);
+  }, [members, map, zoomCount]);
 
   // Re-cluster on zoom using a counter to force re-render
   const [zoomCount, setZoomCount] = useState(0);
