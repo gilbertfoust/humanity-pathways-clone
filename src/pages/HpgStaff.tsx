@@ -1,6 +1,7 @@
 import Navbar from "@/components/Navbar";
 import PageHero from "@/components/PageHero";
 import Footer from "@/components/Footer";
+import StaffGlobe from "@/components/StaffGlobe";
 import { motion } from "framer-motion";
 
 const executiveCabinet = [
@@ -94,6 +95,9 @@ export default function HpgStaff() {
           </div>
         </div>
       </section>
+
+      {/* Interactive Globe */}
+      <StaffGlobe />
 
       {/* Staff Directory */}
       <section className="bg-muted py-20">
