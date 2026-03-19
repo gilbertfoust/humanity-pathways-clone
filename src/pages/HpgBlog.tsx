@@ -120,7 +120,7 @@ export default function HpgBlog() {
                         </div>
                         {post.title && (
                           <h3 className="font-display text-lg font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2">
-                            {post.title}
+                            {decodeHtml(post.title)}
                           </h3>
                         )}
                         {excerpt && (
