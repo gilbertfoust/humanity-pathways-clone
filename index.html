@@ -10,7 +10,7 @@
       content="Humanity Pathways Global is a multi-page React site highlighting the organization's mission, initiatives, events, sponsorship opportunities, and ways to get involved."
     />
     <meta name="author" content="Humanity Pathways Global" />
-    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/x-icon" href="%BASE_URL%favicon.ico" />
 
     <meta property="og:title" content="Humanity Pathways Global" />
     <meta
@@ -18,7 +18,7 @@
       content="Explore Humanity Pathways Global's mission, programs, leadership, and engagement opportunities."
     />
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="/placeholder.svg" />
+    <meta property="og:image" content="%BASE_URL%placeholder.svg" />
 
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Humanity Pathways Global" />
@@ -26,19 +26,22 @@
       name="twitter:description"
       content="Explore Humanity Pathways Global's mission, programs, leadership, and engagement opportunities."
     />
-    <meta name="twitter:image" content="/placeholder.svg" />
+    <meta name="twitter:image" content="%BASE_URL%placeholder.svg" />
 
     <script>
       (function (location) {
-        if (location.search[1] === "/") {
-          const decoded = location.search
-            .slice(1)
-            .split("&")
-            .map((segment) => segment.replace(/~and~/g, "&"))
-            .join("?");
-
-          window.history.replaceState(null, "", location.pathname.slice(0, -1) + decoded + location.hash);
+        if (location.search[1] !== "/") {
+          return;
         }
+
+        const decodedRoute = location.search
+          .slice(1)
+          .split("&")
+          .map((segment) => segment.replace(/~and~/g, "&"))
+          .join("?");
+        const basePath = "%BASE_URL%" === "/" ? "" : "%BASE_URL%".replace(/\/$/, "");
+
+        window.history.replaceState(null, "", `${basePath}${decodedRoute}${location.hash}`);
       })(window.location);
     </script>
   </head>

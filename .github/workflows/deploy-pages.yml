@@ -18,8 +18,6 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      VITE_BASE_PATH: /humanity-pathways-clone/
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -33,11 +31,23 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
+      - name: Determine Pages base path
+        run: |
+          if [ -n "${{ vars.PAGES_BASE_PATH }}" ]; then
+            echo "VITE_BASE_PATH=${{ vars.PAGES_BASE_PATH }}" >> "$GITHUB_ENV"
+          elif [ "${{ github.event.repository.name }}" = "${{ github.repository_owner }}.github.io" ]; then
+            echo "VITE_BASE_PATH=/" >> "$GITHUB_ENV"
+          else
+            echo "VITE_BASE_PATH=/${{ github.event.repository.name }}/" >> "$GITHUB_ENV"
+          fi
+
       - name: Install dependencies
         run: npm ci
 
       - name: Build site
         run: npm run build
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
