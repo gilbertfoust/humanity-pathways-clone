@@ -64,7 +64,7 @@ export default function StaffGlobe() {
       markerColor: [0.9, 0.55, 0.1],
       glowColor: [0.1, 0.2, 0.35],
       markers,
-      onRender: (state) => {
+      onRender: (state: Record<string, any>) => {
         if (!pointerInteracting.current) {
           phi.current += 0.003;
         }
@@ -72,7 +72,7 @@ export default function StaffGlobe() {
         state.width = width * 2;
         state.height = width * 2;
       },
-    });
+    } as any);
 
     setTimeout(() => {
       if (canvasRef.current) canvasRef.current.style.opacity = "1";

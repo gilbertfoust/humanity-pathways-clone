@@ -96,6 +96,9 @@ export default function HpgStaff() {
         </div>
       </section>
 
+      {/* Interactive Globe */}
+      <StaffGlobe />
+
       {/* Staff Directory */}
       <section className="bg-muted py-20">
         <div className="mx-auto max-w-6xl px-4">
