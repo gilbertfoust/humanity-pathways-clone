@@ -106,31 +106,37 @@ function Globe({ members, focusTarget }: { members: TeamMember[]; focusTarget: T
       markerColor: [0.9, 0.75, 0.3],
       glowColor: [0.15, 0.2, 0.35],
       markers,
-      onRender: (state) => {
-        state.width = widthRef.current * 2;
-        state.height = widthRef.current * 2;
-
-        // Smooth focus animation
-        if (focusRef.current) {
-          const distPhi = focusRef.current.phi - phiRef.current;
-          const distTheta = focusRef.current.theta - thetaRef.current;
-          phiRef.current += distPhi * 0.08;
-          thetaRef.current += distTheta * 0.08;
-          if (Math.abs(distPhi) < 0.01 && Math.abs(distTheta) < 0.01) {
-            focusRef.current = null;
-          }
-        } else if (pointerInteracting.current === null) {
-          // Auto-rotate when not interacting and not focusing
-          phiRef.current += 0.003;
-        }
-
-        state.phi = phiRef.current + pointerInteractionMovement.current;
-        state.theta = thetaRef.current;
-        state.markers = markers;
-      },
     });
 
+    let rafId: number;
+    const animate = () => {
+      // Smooth focus animation
+      if (focusRef.current) {
+        const distPhi = focusRef.current.phi - phiRef.current;
+        const distTheta = focusRef.current.theta - thetaRef.current;
+        phiRef.current += distPhi * 0.08;
+        thetaRef.current += distTheta * 0.08;
+        if (Math.abs(distPhi) < 0.01 && Math.abs(distTheta) < 0.01) {
+          focusRef.current = null;
+        }
+      } else if (pointerInteracting.current === null) {
+        phiRef.current += 0.003;
+      }
+
+      globe.update({
+        width: widthRef.current * 2,
+        height: widthRef.current * 2,
+        phi: phiRef.current + pointerInteractionMovement.current,
+        theta: thetaRef.current,
+        markers,
+      });
+
+      rafId = requestAnimationFrame(animate);
+    };
+    rafId = requestAnimationFrame(animate);
+
     return () => {
+      cancelAnimationFrame(rafId);
       globe.destroy();
       window.removeEventListener("resize", onResize);
     };
