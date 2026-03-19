@@ -33,6 +33,7 @@ const App = () => (
           <Route path="/hpg-blog" element={<HpgBlog />} />
           <Route path="/global-leaders-summit" element={<GlobalLeadersSummit />} />
           <Route path="/contact-us" element={<ContactUs />} />
+          <Route path="/volunteer-application" element={<VolunteerApplication />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
