@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Facebook, Instagram, Linkedin } from "lucide-react";
+import hpgLogo from "@/assets/hpg-logo.png";
 
 const footerLinks = [
   { label: "HPG Vision", href: "/hpg-vision" },
@@ -21,7 +22,10 @@ export default function Footer() {
         <div className="grid gap-12 md:grid-cols-3">
           {/* Branding */}
           <div>
-            <h3 className="font-display text-2xl font-semibold">Humanity Pathways Global</h3>
+            <div className="flex items-center gap-3">
+              <img src={hpgLogo} alt="HPG Logo" className="h-12 w-12 object-contain" />
+              <h3 className="font-display text-2xl font-semibold">Humanity Pathways Global</h3>
+            </div>
             <p className="mt-3 text-sm leading-relaxed text-primary-foreground/70">
               220 West Congress Street Ste 698, Detroit, MI, USA
             </p>

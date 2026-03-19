@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import hpgLogo from "@/assets/hpg-logo.png";
 import { Menu, X, ChevronDown, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -34,8 +35,11 @@ export default function Navbar() {
     <nav className="fixed top-0 left-0 right-0 z-50 bg-primary/95 backdrop-blur-sm" style={{ height: "var(--nav-height)" }}>
       <div className="mx-auto flex h-full max-w-7xl items-center justify-between px-4 lg:px-8">
         {/* Logo */}
-        <Link to="/" className="font-display text-lg font-bold uppercase tracking-[0.25em] text-primary-foreground">
-          Humanity Pathways Global
+        <Link to="/" className="flex items-center gap-2">
+          <img src={hpgLogo} alt="HPG Logo" className="h-10 w-10 object-contain" />
+          <span className="font-display text-lg font-bold uppercase tracking-[0.25em] text-primary-foreground">
+            Humanity Pathways Global
+          </span>
         </Link>
 
         {/* Desktop Nav */}

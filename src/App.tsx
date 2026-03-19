@@ -15,6 +15,17 @@ import ContactUs from "./pages/ContactUs.tsx";
 import VolunteerApplication from "./pages/VolunteerApplication.tsx";
 import SponsorshipApplication from "./pages/SponsorshipApplication.tsx";
 import NotFound from "./pages/NotFound.tsx";
+import GYLFH from "./pages/initiatives/GYLFH.tsx";
+import NazareneMission from "./pages/initiatives/NazareneMission.tsx";
+import MegaBridgeKenya from "./pages/initiatives/MegaBridgeKenya.tsx";
+import SanteVieMeilleure from "./pages/initiatives/SanteVieMeilleure.tsx";
+import CUBACongo from "./pages/initiatives/CUBACongo.tsx";
+import TriumphantPhilippines from "./pages/initiatives/TriumphantPhilippines.tsx";
+import ProjectWings from "./pages/initiatives/ProjectWings.tsx";
+import HopeForAGoodLife from "./pages/initiatives/HopeForAGoodLife.tsx";
+import SeishinPlus from "./pages/initiatives/SeishinPlus.tsx";
+import CPBI from "./pages/initiatives/CPBI.tsx";
+import HpgExecutiveAcademy from "./pages/initiatives/HpgExecutiveAcademy.tsx";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +47,17 @@ const App = () => (
           <Route path="/contact-us" element={<ContactUs />} />
           <Route path="/volunteer-application" element={<VolunteerApplication />} />
           <Route path="/sponsorship-application" element={<SponsorshipApplication />} />
+          <Route path="/gylfh" element={<GYLFH />} />
+          <Route path="/nazarene-mission" element={<NazareneMission />} />
+          <Route path="/megabridge-kenya" element={<MegaBridgeKenya />} />
+          <Route path="/sante-vie-meilleure" element={<SanteVieMeilleure />} />
+          <Route path="/cuba-congo" element={<CUBACongo />} />
+          <Route path="/triumphant-philippines" element={<TriumphantPhilippines />} />
+          <Route path="/project-wings" element={<ProjectWings />} />
+          <Route path="/hope-for-a-good-life" element={<HopeForAGoodLife />} />
+          <Route path="/seishin-plus" element={<SeishinPlus />} />
+          <Route path="/cpbi" element={<CPBI />} />
+          <Route path="/hpg-executive-academy" element={<HpgExecutiveAcademy />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
