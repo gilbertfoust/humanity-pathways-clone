@@ -238,8 +238,10 @@ export default function StaffGlobe() {
               worldCopyJump={true}
             >
               <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                attribution='&copy; <a href="https://www.mapbox.com/">Mapbox</a>'
+                url="https://api.mapbox.com/styles/v1/mapbox/streets-v12/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiZ2lsYmVydGZvdXN0IiwiYSI6ImNtZTIyYnI1cDBtdXIyaW9saWI5bmV5cTMifQ.NZE2WIrkVbvVoopIaPXmkQ"
+                tileSize={512}
+                zoomOffset={-1}
               />
               <ClusteredMarkers members={filtered} />
               <FlyTo center={flyTarget} />
