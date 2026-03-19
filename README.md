@@ -1,137 +1,104 @@
 # Humanity Pathways Global
 
-Production-ready Vite + React + TypeScript site for Humanity Pathways Global, prepared for deployment as a GitHub Pages **repository site** at `https://gilbertfoust.github.io/humanity-pathways-clone/`.
+This repository contains the Humanity Pathways Global marketing site built with Vite, React, and TypeScript, now prepared for production deployment on GitHub Pages.
 
-## Overview
+## What was added for production readiness
 
-This repository contains a multi-page marketing/informational website exported from Lovable and hardened for maintainable static hosting on GitHub Pages. The app includes organization pages, initiative landing pages, event information, sponsorship flows, and contact/volunteer routes.
+- GitHub Pages deployment workflow using GitHub Actions
+- Dynamic Vite base-path handling for repo sites and user/org sites
+- BrowserRouter-compatible SPA fallback for direct route loads and refreshes on Pages
+- npm-only package manager standardization
+- Generated Pages support files (`404.html` and `.nojekyll`) during production builds
+- Deployment and maintenance documentation for future updates
 
-## Tech stack
+## Stack
 
 - React 18
 - TypeScript
 - Vite 8
 - React Router 6
 - Tailwind CSS
-- shadcn/ui-style component primitives
 - Vitest
-- Playwright configuration scaffold
 
 ## Package manager
 
-This repository is standardized on **npm**.
-
-- Use `package-lock.json` for local development and CI.
-- `bun.lock` was removed to avoid mixed lockfiles and inconsistent installs.
-
-## Local development
-
-### Prerequisites
-
-- Node.js 20+ recommended
-- npm 10+ recommended
-
-### Install dependencies
+This repo is standardized on **npm**.
 
 ```bash
 npm ci
 ```
 
-### Start the development server
+## Local development
 
 ```bash
 npm run dev
 ```
 
-The Vite dev server runs with a root base path of `/`, so local routing behaves normally at `http://localhost:8080/`.
+The local dev server uses the root base path `/`, so routes behave normally at `http://localhost:8080/`.
 
-## Testing
-
-Run the current automated test suite with:
-
-```bash
-npm run test
-```
-
-## Production build
-
-Build the GitHub Pages-ready static site with:
+## Build for production
 
 ```bash
 npm run build
 ```
 
-Vite outputs the production bundle to:
+The production build:
 
-```text
-dist/
+1. Generates GitHub Pages support files in `public/`
+2. Applies the correct Vite base path
+3. Writes the final static site to `dist/`
+
+## How Pages base paths are resolved
+
+Production builds use the following priority:
+
+1. `VITE_BASE_PATH` if explicitly provided
+2. `GITHUB_REPOSITORY` if running in GitHub Actions
+3. `/` as the safe local fallback
+
+For GitHub Actions, you can optionally define a repository or organization variable named `PAGES_BASE_PATH` to override the workflow default without editing code.
+
+Examples:
+
+```bash
+VITE_BASE_PATH=/humanity-pathways-clone/ npm run build
+VITE_BASE_PATH=/ npm run build
 ```
 
-## GitHub Pages deployment
+## GitHub Pages workflow
 
-A GitHub Actions workflow is included at `.github/workflows/deploy-pages.yml`.
+The workflow at `.github/workflows/deploy-pages.yml`:
 
-### What the workflow does
-
-On every push to `main`, it:
-
-1. Checks out the repository
+1. Runs on pushes to `main`
 2. Installs dependencies with `npm ci`
-3. Builds the app with `npm run build`
-4. Uploads `dist/` as the Pages artifact
-5. Deploys the artifact to GitHub Pages
+3. Detects whether the repo is a user/org Pages site or a project Pages site
+4. Builds the app
+5. Uploads `dist/`
+6. Deploys to GitHub Pages
 
-### Required GitHub configuration
+## BrowserRouter support on GitHub Pages
 
-In the GitHub repository settings:
+GitHub Pages does not natively rewrite arbitrary routes to `index.html`. To keep clean URLs with `BrowserRouter`, this repo uses the standard SPA fallback approach:
+
+- `npm run build` generates `public/404.html` with the correct path-segment depth
+- `index.html` restores the intended route before React hydrates
+- `BrowserRouter` reads its `basename` from Vite's resolved `BASE_URL`
+
+That allows direct visits and refreshes for nested routes on GitHub Pages without switching the app to hash-based URLs.
+
+## Manual GitHub settings still required
+
+After pushing to GitHub, configure the repository once:
 
 1. Open **Settings → Pages**
 2. Set **Source** to **GitHub Actions**
-3. Ensure the default branch is `main`
-4. Allow Actions permissions needed for Pages deployment if your org/repo policy restricts them
+3. Ensure the deployment branch is the branch that contains this workflow, typically `main`
+4. If your organization restricts Actions or Pages deployments, allow the required permissions for this workflow
+5. If you use a custom domain or need a nonstandard path, add a repository variable named `PAGES_BASE_PATH` (use `/` for a custom domain root)
+6. If you use a custom domain, set it in **Settings → Pages**
 
-## Base path and environment variables
+## Maintenance notes
 
-The Vite config uses a GitHub Pages-safe base path strategy:
-
-- Development: `/`
-- Production: `process.env.VITE_BASE_PATH ?? "/humanity-pathways-clone/"`
-
-### Optional environment variable
-
-| Variable | Required | Default | Purpose |
-| --- | --- | --- | --- |
-| `VITE_BASE_PATH` | No | `/humanity-pathways-clone/` | Overrides the production base path used for asset URLs and router basename |
-
-For example, to build the same site under a different repo-site path:
-
-```bash
-VITE_BASE_PATH=/my-other-repo/ npm run build
-```
-
-## Routing notes for GitHub Pages
-
-This project keeps **`BrowserRouter`** so URLs remain clean.
-
-Because GitHub Pages is a static host and does not natively rewrite arbitrary route requests back to `index.html`, the repository includes a Pages SPA fallback:
-
-- `public/404.html` redirects direct route requests back into the SPA entry point
-- `index.html` restores the original route before React boots
-- `BrowserRouter` uses Vite's computed base URL as its `basename`
-
-This avoids changing the app to hash-based URLs while still supporting direct loads and refreshes on nested routes for a GitHub Pages repo site.
-
-## Project structure
-
-```text
-.github/workflows/      GitHub Actions deployment workflow
-public/                 Static assets copied directly to the final build
-src/                    React application source
-vite.config.ts          Vite config, including Pages-aware base path handling
-```
-
-## Maintainer notes
-
-- If the GitHub repository name changes, update the fallback default in `vite.config.ts` and the workflow's `VITE_BASE_PATH` value.
-- If you migrate from a repo site to a custom domain or user/org Pages site, revisit the base path and SPA fallback assumptions.
-- Keep route additions inside `src/App.tsx` aligned with the site's navigation and smoke-test them after deployment.
+- If the repository name changes, the workflow will automatically adapt for standard repo-site deployments
+- If you move to a custom domain or a user/org site, use `VITE_BASE_PATH=/`
+- Keep route changes in sync with `src/App.tsx` and smoke-test direct route loads after deployment
