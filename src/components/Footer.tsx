@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Facebook, Instagram, Linkedin } from "lucide-react";
+import hpgLogo from "@/assets/hpg-logo.png";
 
 const footerLinks = [
   { label: "HPG Vision", href: "/hpg-vision" },
