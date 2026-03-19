@@ -196,7 +196,7 @@ export default function GYLFH() {
             <Button asChild size="lg" variant="secondary">
               <a href={DONATE_URL} target="_blank" rel="noopener noreferrer">Donate now</a>
             </Button>
-            <Button asChild size="lg" variant="outline" className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10">
+            <Button asChild size="lg" variant="outline" className="border-primary-foreground/50 text-primary-foreground hover:bg-primary-foreground/10 bg-transparent">
               <a href="mailto:development@humanitypathwaysglobal.com?subject=GYLFH%20Cohort%20Sponsorship%20Inquiry">
                 <Mail className="mr-2 h-4 w-4" /> Sponsor a cohort
               </a>
