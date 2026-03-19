@@ -29,13 +29,14 @@ import HpgExecutiveAcademy from "./pages/initiatives/HpgExecutiveAcademy.tsx";
 import HpgOnboardingFee from "./pages/HpgOnboardingFee.tsx";
 
 const queryClient = new QueryClient();
+const routerBasename = import.meta.env.BASE_URL.replace(/\/$/, "") || undefined;
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
+      <BrowserRouter basename={routerBasename}>
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/hpg-vision" element={<HpgVision />} />
@@ -60,7 +61,6 @@ const App = () => (
           <Route path="/cpbi" element={<CPBI />} />
           <Route path="/hpg-executive-academy" element={<HpgExecutiveAcademy />} />
           <Route path="/hpg-onboarding-fee" element={<HpgOnboardingFee />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
