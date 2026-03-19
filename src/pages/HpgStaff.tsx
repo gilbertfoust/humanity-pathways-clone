@@ -1,6 +1,7 @@
 import Navbar from "@/components/Navbar";
 import PageHero from "@/components/PageHero";
 import Footer from "@/components/Footer";
+import StaffGlobe from "@/components/StaffGlobe";
 import { motion } from "framer-motion";
 
 const executiveCabinet = [
