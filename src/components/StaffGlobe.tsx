@@ -106,13 +106,19 @@ function createMemberIcon(hasImage: boolean) {
 function ClusteredMarkers({ members }: { members: TeamMember[] }) {
   const map = useMap();
   const layerRef = useRef<L.LayerGroup | null>(null);
+  const [zoomCount, setZoomCount] = useState(0);
+
+  useEffect(() => {
+    const handler = () => setZoomCount((c) => c + 1);
+    map.on("zoomend", handler);
+    return () => { map.off("zoomend", handler); };
+  }, [map]);
 
   useEffect(() => {
     if (layerRef.current) {
       map.removeLayer(layerRef.current);
     }
 
-    // Simple grid-based clustering
     const zoom = map.getZoom();
     const gridSize = 60 / Math.pow(2, zoom - 2);
 
@@ -125,8 +131,7 @@ function ClusteredMarkers({ members }: { members: TeamMember[] }) {
 
     const group = L.layerGroup();
 
-    clusters.forEach((clusterMembers, key) => {
-      const [lat, lng] = key.split(",").map(Number);
+    clusters.forEach((clusterMembers) => {
       const avgLat = clusterMembers.reduce((s, m) => s + m.lat, 0) / clusterMembers.length;
       const avgLng = clusterMembers.reduce((s, m) => s + m.lng, 0) / clusterMembers.length;
 
@@ -158,18 +163,10 @@ function ClusteredMarkers({ members }: { members: TeamMember[] }) {
     group.addTo(map);
     layerRef.current = group;
 
-    const onZoom = () => {
-      // Re-render on zoom by triggering state update would be complex,
-      // so we just let the effect re-run
-    };
-
     return () => {
       if (layerRef.current) map.removeLayer(layerRef.current);
     };
   }, [members, map, zoomCount]);
-
-  // Re-cluster on zoom using a counter to force re-render
-  const [zoomCount, setZoomCount] = useState(0);
   useEffect(() => {
     const handler = () => setZoomCount((c) => c + 1);
     map.on("zoomend", handler);
