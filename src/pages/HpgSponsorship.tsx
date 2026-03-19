@@ -41,6 +41,19 @@ export default function HpgSponsorship() {
       <Navbar />
       <PageHero title="HPG Sponsorship" subtitle="Strategic partnerships for mission-driven organizations" />
 
+      {/* Apply CTA */}
+      <section className="bg-accent/10 py-8">
+        <div className="mx-auto max-w-5xl px-4 text-center">
+          <p className="text-lg text-foreground">Ready to apply for sponsorship?</p>
+          <Link
+            to="/sponsorship-application"
+            className="mt-3 inline-block rounded bg-primary px-8 py-3 text-sm font-bold uppercase tracking-wider text-primary-foreground transition-colors hover:bg-primary/90"
+          >
+            Start Sponsorship Application
+          </Link>
+        </div>
+      </section>
+
       {/* What HPG Provides */}
       <section className="bg-background py-20">
         <div className="mx-auto max-w-5xl px-4">
