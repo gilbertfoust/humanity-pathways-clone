@@ -12,6 +12,7 @@ import HpgSponsorship from "./pages/HpgSponsorship.tsx";
 import HpgBlog from "./pages/HpgBlog.tsx";
 import GlobalLeadersSummit from "./pages/GlobalLeadersSummit.tsx";
 import ContactUs from "./pages/ContactUs.tsx";
+import VolunteerApplication from "./pages/VolunteerApplication.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -32,6 +33,7 @@ const App = () => (
           <Route path="/hpg-blog" element={<HpgBlog />} />
           <Route path="/global-leaders-summit" element={<GlobalLeadersSummit />} />
           <Route path="/contact-us" element={<ContactUs />} />
+          <Route path="/volunteer-application" element={<VolunteerApplication />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
