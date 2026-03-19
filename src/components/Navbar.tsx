@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import hpgLogo from "@/assets/hpg-logo.png";
 import { Menu, X, ChevronDown, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
