@@ -2,7 +2,8 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import gylfhBanner from "@/assets/gylfh-banner.jpg";
+import gylfhHeroLeft from "@/assets/gylfh-hero-left.jpg";
+import gylfhHeroRight from "@/assets/gylfh-hero-right.jpg";
 import gylfhLogo from "@/assets/gylfh-logo.png";
 import { ExternalLink, Mail, Users, Globe, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -37,27 +38,30 @@ export default function GYLFH() {
     <div className="min-h-screen">
       <Navbar />
 
-      {/* Hero Banner */}
-      <section className="relative h-72 md:h-96 overflow-hidden">
-        <img src={gylfhBanner} alt="GYLFH Banner" className="h-full w-full object-cover" />
-        <div className="absolute inset-0 bg-primary/60" />
-        <div className="absolute inset-0 flex items-center justify-center pt-[var(--nav-height)]">
-          <div className="text-center px-4">
-            <p className="text-sm uppercase tracking-widest text-primary-foreground/70">
-              Youth diplomacy • Leadership • Community projects
-            </p>
-            <h1 className="mt-2 font-display text-3xl md:text-5xl font-bold text-primary-foreground">
-              Equip young leaders to serve locally, connect globally, and lead with skill.
-            </h1>
+      {/* Hero Banner - Triptych */}
+      <section className="bg-muted pt-[var(--nav-height)]">
+        <h1 className="py-10 text-center font-display text-4xl md:text-5xl font-bold text-foreground">
+          Global Youth Leaders For Humanity
+        </h1>
+        <div className="mx-auto max-w-5xl px-4 pb-12 grid grid-cols-3 gap-0 overflow-hidden rounded-lg shadow-lg">
+          <img src={gylfhHeroLeft} alt="Diverse youth studying together in a library" className="h-64 md:h-96 w-full object-cover" />
+          <div className="relative flex items-center justify-center bg-gradient-to-br from-primary/80 via-primary/60 to-accent/40">
+            <img src={gylfhLogo} alt="GYLFH Logo" className="h-32 w-32 md:h-48 md:w-48 object-contain drop-shadow-lg" />
           </div>
+          <img src={gylfhHeroRight} alt="Young students collaborating with laptops" className="h-64 md:h-96 w-full object-cover" />
         </div>
       </section>
 
-      {/* Subtitle + CTA */}
+      {/* Mission + CTA */}
       <section className="bg-background py-12">
         <div className="mx-auto max-w-4xl px-4 text-center">
-          <img src={gylfhLogo} alt="GYLFH Logo" className="mx-auto mb-6 h-24 w-24 object-contain" />
-          <p className="text-muted-foreground leading-relaxed max-w-2xl mx-auto">
+          <p className="text-sm uppercase tracking-widest text-muted-foreground mb-4">
+            Youth diplomacy • Leadership • Community projects
+          </p>
+          <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">
+            Equip young leaders to serve locally, connect globally, and lead with skill.
+          </h2>
+          <p className="mt-4 text-muted-foreground leading-relaxed max-w-2xl mx-auto">
             Support training that combines diplomacy workshops, cross-cultural exchange, mentorship, and hands-on projects.
             Gifts are directed to delivery, materials, coordination, and reporting.
           </p>
