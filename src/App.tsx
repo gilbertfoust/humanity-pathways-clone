@@ -26,6 +26,7 @@ import HopeForAGoodLife from "./pages/initiatives/HopeForAGoodLife.tsx";
 import SeishinPlus from "./pages/initiatives/SeishinPlus.tsx";
 import CPBI from "./pages/initiatives/CPBI.tsx";
 import HpgExecutiveAcademy from "./pages/initiatives/HpgExecutiveAcademy.tsx";
+import HpgOnboardingFee from "./pages/HpgOnboardingFee.tsx";
 
 const queryClient = new QueryClient();
 
@@ -58,6 +59,7 @@ const App = () => (
           <Route path="/seishin-plus" element={<SeishinPlus />} />
           <Route path="/cpbi" element={<CPBI />} />
           <Route path="/hpg-executive-academy" element={<HpgExecutiveAcademy />} />
+          <Route path="/hpg-onboarding-fee" element={<HpgOnboardingFee />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
