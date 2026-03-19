@@ -26,6 +26,7 @@ import HopeForAGoodLife from "./pages/initiatives/HopeForAGoodLife.tsx";
 import SeishinPlus from "./pages/initiatives/SeishinPlus.tsx";
 import CPBI from "./pages/initiatives/CPBI.tsx";
 import HpgExecutiveAcademy from "./pages/initiatives/HpgExecutiveAcademy.tsx";
+import HpgOnboardingFee from "./pages/HpgOnboardingFee.tsx";
 
 const queryClient = new QueryClient();
 
