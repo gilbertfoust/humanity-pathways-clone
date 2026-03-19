@@ -168,15 +168,10 @@ function ClusteredMarkers({ members }: { members: TeamMember[] }) {
     };
   }, [members, map]);
 
-  // Re-cluster on zoom
+  // Re-cluster on zoom using a counter to force re-render
+  const [zoomCount, setZoomCount] = useState(0);
   useEffect(() => {
-    const handler = () => {
-      // Force re-render by removing and re-adding
-      if (layerRef.current) {
-        map.removeLayer(layerRef.current);
-        layerRef.current = null;
-      }
-    };
+    const handler = () => setZoomCount((c) => c + 1);
     map.on("zoomend", handler);
     return () => { map.off("zoomend", handler); };
   }, [map]);
