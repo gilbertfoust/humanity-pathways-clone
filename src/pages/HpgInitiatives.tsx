@@ -26,7 +26,7 @@ const filters = ["All", "Africa", "USA", "Asia / Global"];
 
 const initiatives = [
   { name: "GYLFH", logo: gylfhLogo, location: "International", region: "Asia / Global", desc: "Building ethical, globally minded young leaders through workshops and advocacy across four continents.", href: "/gylfh" },
-  { name: "Nazarene Mission", logo: nazareneLogo, location: "Luanda, Angola", region: "Africa", desc: "Empowering Angolan communities through holistic ministry, education, and healthcare initiatives.", href: "/nazarene-mission" },
+  { name: "Youth Development Program", logo: nazareneLogo, location: "Luanda, Angola", region: "Africa", desc: "Empowering Angolan youth through leadership, education, and advocacy initiatives.", href: "/nazarene-mission" },
   { name: "MegaBridge Kenya", logo: megabridgeLogo, location: "Kenya", region: "Africa", desc: "Strengthening educational infrastructure and community empowerment through capacity building in East Africa.", href: "/megabridge-kenya" },
   { name: "Santé Vie Meilleure", logo: santeLogo, location: "Togo", region: "Africa", desc: "Advancing health education and access, improving outcomes for underserved communities through clinics and outreach.", href: "/sante-vie-meilleure" },
   { name: "CUBA Congo", logo: cubaLogo, location: "Congo", region: "Africa", desc: "Empowering youth and enhancing community health, focusing on advocacy and essential services.", href: "/cuba-congo" },
