@@ -74,9 +74,15 @@ export default function Navbar() {
               )}
             </div>
           ))}
-          <button className="ml-2 p-2 text-primary-foreground/80 hover:text-primary-foreground">
+          <a
+            href="https://gilbertfoust.github.io/hpg-workspace/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="ml-2 p-2 text-primary-foreground/80 hover:text-primary-foreground"
+            aria-label="HPG Workspace"
+          >
             <User className="h-4 w-4" />
-          </button>
+          </a>
         </div>
 
         {/* Mobile toggle */}

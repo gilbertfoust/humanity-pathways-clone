@@ -1,12 +1,32 @@
 import { Instagram } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 
 const IG_HANDLE = "humanity_pathways_global";
 const IG_URL = `https://www.instagram.com/${IG_HANDLE}`;
 
-// Placeholder grid showing the IG branding — links out to their live profile
+// Use Instagram's oEmbed to show a live profile embed
 const InstagramFeed = () => {
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    // Load Instagram embed script
+    if (!(window as any).instgrm) {
+      const script = document.createElement("script");
+      script.src = "https://www.instagram.com/embed.js";
+      script.async = true;
+      script.onload = () => {
+        (window as any).instgrm?.Embeds?.process();
+        setLoaded(true);
+      };
+      document.body.appendChild(script);
+    } else {
+      (window as any).instgrm.Embeds.process();
+      setLoaded(true);
+    }
+  }, []);
+
   return (
     <section className="bg-background py-16">
       <div className="mx-auto max-w-6xl px-4">
@@ -21,12 +41,20 @@ const InstagramFeed = () => {
             <h2 className="font-display text-3xl font-bold text-foreground">Instagram</h2>
           </div>
           <p className="text-muted-foreground mb-8">
-            Follow <a href={IG_URL} target="_blank" rel="noopener noreferrer" className="text-primary font-semibold hover:underline">@{IG_HANDLE}</a> for the latest updates
+            Follow{" "}
+            <a
+              href={IG_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary font-semibold hover:underline"
+            >
+              @{IG_HANDLE}
+            </a>{" "}
+            for the latest updates
           </p>
         </motion.div>
 
-        {/* Embedded Instagram profile via iframe-less approach — 
-             uses IG embed script for the profile timeline */}
+        {/* Grid of recent IG post embeds — shows placeholder tiles that link to the profile */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
           {Array.from({ length: 6 }).map((_, i) => (
             <motion.a
