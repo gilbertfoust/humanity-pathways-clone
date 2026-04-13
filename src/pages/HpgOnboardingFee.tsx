@@ -369,9 +369,28 @@ export default function HpgOnboardingFee() {
                 <Button
                   className="mt-6 w-full"
                   size="lg"
-                  disabled={!consent}
+                  disabled={!consent || paying}
+                  onClick={async () => {
+                    setPaying(true);
+                    try {
+                      // TODO: Replace with Stripe checkout — for now send receipt email
+                      await sendReceiptEmail();
+                      toast({
+                        title: "Receipt sent",
+                        description: "A payment receipt has been sent to finance.",
+                      });
+                    } catch {
+                      toast({
+                        title: "Error",
+                        description: "Failed to process. Please try again.",
+                        variant: "destructive",
+                      });
+                    } finally {
+                      setPaying(false);
+                    }
+                  }}
                 >
-                  Pay ${fee.amount.toFixed(2)}
+                  {paying ? "Processing…" : `Pay $${fee.amount.toFixed(2)}`}
                 </Button>
 
                 <p className="mt-4 text-center text-xs text-muted-foreground">
