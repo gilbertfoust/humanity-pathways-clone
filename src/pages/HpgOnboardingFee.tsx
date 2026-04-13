@@ -59,6 +59,7 @@ function getFee(country: string, state: string) {
 }
 
 export default function HpgOnboardingFee() {
+  const { toast } = useToast();
   const today = new Date().toLocaleDateString("en-US", {
     month: "long",
     day: "numeric",
@@ -79,8 +80,31 @@ export default function HpgOnboardingFee() {
   const [billingAddress, setBillingAddress] = useState("");
   const [postalCode, setPostalCode] = useState("");
   const [consent, setConsent] = useState(false);
+  const [paying, setPaying] = useState(false);
 
   const fee = useMemo(() => getFee(country, state), [country, state]);
+
+  const sendReceiptEmail = async () => {
+    const id = crypto.randomUUID();
+    await supabase.functions.invoke("send-transactional-email", {
+      body: {
+        templateName: "onboarding-fee-receipt",
+        recipientEmail: "finance@humanitypathwaysglobal.com",
+        idempotencyKey: `onboarding-finance-${id}`,
+        templateData: {
+          orgName,
+          contact,
+          email,
+          phone,
+          country,
+          state,
+          tier: fee.tier,
+          amount: fee.amount.toFixed(2),
+          date: today,
+        },
+      },
+    });
+  };
 
   const stateLabel = country === "Canada" ? "Province" : "State / Province";
   const stateList =
