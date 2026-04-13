@@ -1,10 +1,10 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { Shield, Copy, Check } from "lucide-react";
+import { EmbeddedCheckoutProvider, EmbeddedCheckout } from "@stripe/react-stripe-js";
+import { Shield } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -18,6 +18,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { supabase } from "@/integrations/supabase/client";
+import { getStripe, getStripeEnvironment } from "@/lib/stripe";
 
 /* ─── Fee schedule data ─── */
 const US_STATES = [
@@ -38,7 +40,6 @@ const CA_PROVINCES = [
   "Northwest Territories","Nunavut","Yukon",
 ];
 
-/* Tier B states have higher filing complexity */
 const TIER_B_STATES = new Set([
   "California","New York","Illinois","Florida","Texas","Pennsylvania",
   "Massachusetts","New Jersey","Ohio","Virginia",
@@ -46,20 +47,18 @@ const TIER_B_STATES = new Set([
 
 function getFee(country: string, state: string) {
   if (country === "Other / International") {
-    return { tier: "International", amount: 200 };
+    return { tier: "International", amount: 200, priceId: "onboarding_tier_b" };
   }
   if (country === "Canada") {
-    return { tier: "Tier A (lower filing complexity)", amount: 150 };
+    return { tier: "Tier A (lower filing complexity)", amount: 150, priceId: "onboarding_tier_a" };
   }
-  // United States
   if (TIER_B_STATES.has(state)) {
-    return { tier: "Tier B (higher filing complexity)", amount: 200 };
+    return { tier: "Tier B (higher filing complexity)", amount: 200, priceId: "onboarding_tier_b" };
   }
-  return { tier: "Tier A (lower filing complexity)", amount: 150 };
+  return { tier: "Tier A (lower filing complexity)", amount: 150, priceId: "onboarding_tier_a" };
 }
 
 export default function HpgOnboardingFee() {
-  const { toast } = useToast();
   const today = new Date().toLocaleDateString("en-US", {
     month: "long",
     day: "numeric",
@@ -77,34 +76,10 @@ export default function HpgOnboardingFee() {
   const [state, setState] = useState("Alabama");
 
   /* Payment */
-  const [billingAddress, setBillingAddress] = useState("");
-  const [postalCode, setPostalCode] = useState("");
   const [consent, setConsent] = useState(false);
-  const [paying, setPaying] = useState(false);
+  const [showCheckout, setShowCheckout] = useState(false);
 
   const fee = useMemo(() => getFee(country, state), [country, state]);
-
-  const sendReceiptEmail = async () => {
-    const id = crypto.randomUUID();
-    await supabase.functions.invoke("send-transactional-email", {
-      body: {
-        templateName: "onboarding-fee-receipt",
-        recipientEmail: "finance@humanitypathwaysglobal.com",
-        idempotencyKey: `onboarding-finance-${id}`,
-        templateData: {
-          orgName,
-          contact,
-          email,
-          phone,
-          country,
-          state,
-          tier: fee.tier,
-          amount: fee.amount.toFixed(2),
-          date: today,
-        },
-      },
-    });
-  };
 
   const stateLabel = country === "Canada" ? "Province" : "State / Province";
   const stateList =
@@ -121,8 +96,35 @@ export default function HpgOnboardingFee() {
         ? `Canada • Province: ${state}`
         : `United States • State: ${state}`;
 
+  const canPay = consent && orgName.trim() && contact.trim() && email.trim();
+
+  const fetchClientSecret = async (): Promise<string> => {
+    const { data, error } = await supabase.functions.invoke("create-checkout", {
+      body: {
+        priceId: fee.priceId,
+        customerEmail: email,
+        environment: getStripeEnvironment(),
+        returnUrl: `${window.location.origin}/hpg-onboarding-fee/thank-you?session_id={CHECKOUT_SESSION_ID}`,
+        metadata: {
+          orgName,
+          contact,
+          email,
+          phone,
+          country,
+          state,
+          tier: fee.tier,
+        },
+      },
+    });
+    if (error || !data?.clientSecret) {
+      throw new Error(error?.message || "Failed to create checkout session");
+    }
+    return data.clientSecret;
+  };
+
   return (
     <div className="min-h-screen bg-muted">
+      <PaymentTestModeBanner />
       <Navbar />
 
       <main className="mx-auto max-w-5xl px-4 pb-20 pt-[calc(var(--nav-height)+2rem)]">
@@ -155,255 +157,235 @@ export default function HpgOnboardingFee() {
           </div>
         </motion.div>
 
-        <div className="grid gap-8 lg:grid-cols-2">
-          {/* ─── LEFT: Organization + Jurisdiction ─── */}
-          <div className="space-y-8">
-            {/* Organization Details */}
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-            >
-              <Card>
-                <CardContent className="p-6">
-                  <h2 className="font-display text-xl font-semibold text-foreground">
-                    Organization Details
-                  </h2>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    After compliance review, this payment finalizes the administrative onboarding step.
-                    If your compliance review is still in progress, pause here and pay only when instructed by HPG.
-                  </p>
-
-                  <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="orgName">Organization / Project Name</Label>
-                      <Input
-                        id="orgName"
-                        placeholder="Example: Megabridge Foundation (U…"
-                        value={orgName}
-                        onChange={(e) => setOrgName(e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="contact">Primary Contact</Label>
-                      <Input
-                        id="contact"
-                        placeholder="Full name"
-                        value={contact}
-                        onChange={(e) => setContact(e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="name@example.org"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="phone">Phone</Label>
-                      <Input
-                        id="phone"
-                        type="tel"
-                        placeholder="+1 (___) ___-____"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                      />
-                    </div>
+        {showCheckout ? (
+          /* ─── Stripe Embedded Checkout ─── */
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+          >
+            <Card>
+              <CardContent className="p-6">
+                <div className="mb-4 flex items-center justify-between">
+                  <div>
+                    <h2 className="font-display text-xl font-semibold text-foreground">
+                      Complete Payment
+                    </h2>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {orgName} • {coverageScope} • ${fee.amount.toFixed(2)}
+                    </p>
                   </div>
-                </CardContent>
-              </Card>
-            </motion.div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowCheckout(false)}
+                  >
+                    Back
+                  </Button>
+                </div>
+                <EmbeddedCheckoutProvider
+                  stripe={getStripe()}
+                  options={{ fetchClientSecret }}
+                >
+                  <EmbeddedCheckout />
+                </EmbeddedCheckoutProvider>
+              </CardContent>
+            </Card>
+          </motion.div>
+        ) : (
+          <div className="grid gap-8 lg:grid-cols-2">
+            {/* ─── LEFT: Organization + Jurisdiction ─── */}
+            <div className="space-y-8">
+              {/* Organization Details */}
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+              >
+                <Card>
+                  <CardContent className="p-6">
+                    <h2 className="font-display text-xl font-semibold text-foreground">
+                      Organization Details
+                    </h2>
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      After compliance review, this payment finalizes the administrative onboarding step.
+                      If your compliance review is still in progress, pause here and pay only when instructed by HPG.
+                    </p>
 
-            {/* Jurisdiction & Fee */}
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            >
-              <Card>
-                <CardContent className="p-6">
-                  <h2 className="font-display text-xl font-semibold text-foreground">
-                    Jurisdiction &amp; Fee
-                  </h2>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    Select your country and then your state/province. The total updates automatically.
-                    (HPG can revise the schedule over time; the server validates the final amount.)
-                  </p>
-
-                  <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label>Country</Label>
-                      <Select value={country} onValueChange={(v) => { setCountry(v); setState(v === "United States" ? "Alabama" : v === "Canada" ? "Alberta" : ""); }}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="United States">United States</SelectItem>
-                          <SelectItem value="Canada">Canada</SelectItem>
-                          <SelectItem value="Other / International">Other / International</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {stateList.length > 0 && (
+                    <div className="mt-6 grid gap-4 sm:grid-cols-2">
                       <div className="space-y-2">
-                        <Label>{stateLabel}</Label>
-                        <Select value={state} onValueChange={setState}>
+                        <Label htmlFor="orgName">Organization / Project Name *</Label>
+                        <Input
+                          id="orgName"
+                          placeholder="Example: Megabridge Foundation (U…"
+                          value={orgName}
+                          onChange={(e) => setOrgName(e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="contact">Primary Contact *</Label>
+                        <Input
+                          id="contact"
+                          placeholder="Full name"
+                          value={contact}
+                          onChange={(e) => setContact(e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="email">Email *</Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          placeholder="name@example.org"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="phone">Phone</Label>
+                        <Input
+                          id="phone"
+                          type="tel"
+                          placeholder="+1 (___) ___-____"
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+
+              {/* Jurisdiction & Fee */}
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+              >
+                <Card>
+                  <CardContent className="p-6">
+                    <h2 className="font-display text-xl font-semibold text-foreground">
+                      Jurisdiction &amp; Fee
+                    </h2>
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      Select your country and then your state/province. The total updates automatically.
+                    </p>
+
+                    <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label>Country</Label>
+                        <Select value={country} onValueChange={(v) => { setCountry(v); setState(v === "United States" ? "Alabama" : v === "Canada" ? "Alberta" : ""); }}>
                           <SelectTrigger><SelectValue /></SelectTrigger>
                           <SelectContent>
-                            {stateList.map((s) => (
-                              <SelectItem key={s} value={s}>{s}</SelectItem>
-                            ))}
+                            <SelectItem value="United States">United States</SelectItem>
+                            <SelectItem value="Canada">Canada</SelectItem>
+                            <SelectItem value="Other / International">Other / International</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
-                    )}
+
+                      {stateList.length > 0 && (
+                        <div className="space-y-2">
+                          <Label>{stateLabel}</Label>
+                          <Select value={state} onValueChange={setState}>
+                            <SelectTrigger><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              {stateList.map((s) => (
+                                <SelectItem key={s} value={s}>{s}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Fee summary */}
+                    <div className="mt-6 rounded-md border border-border bg-muted/50 p-4 text-sm">
+                      <div className="flex justify-between py-1">
+                        <span className="text-muted-foreground">Coverage scope</span>
+                        <span className="font-medium text-foreground">{coverageScope}</span>
+                      </div>
+                      <div className="flex justify-between py-1">
+                        <span className="text-muted-foreground">Government filing tier</span>
+                        <span className="font-medium text-foreground">{fee.tier}</span>
+                      </div>
+                      <Separator className="my-2" />
+                      <div className="flex justify-between py-1">
+                        <span className="font-semibold text-foreground">Total due</span>
+                        <span className="font-bold text-foreground">${fee.amount.toFixed(2)}</span>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 space-y-3 text-sm text-muted-foreground">
+                      <p>
+                        <span className="font-semibold text-foreground">What this fee is for:</span>{" "}
+                        registered agent coordination (where applicable), secretary of state nonprofit
+                        registration filing support, and charitable solicitation / charitable deduction
+                        certificate preparation steps (where applicable).
+                      </p>
+                      <p>
+                        <span className="font-semibold text-foreground">What it is not:</span>{" "}
+                        it is not a donation, and it does not replace your fiscal sponsorship agreement
+                        obligations. This payment is generally treated as an administrative onboarding charge.
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            </div>
+
+            {/* ─── RIGHT: Payment ─── */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.15 }}
+            >
+              <Card className="sticky top-[calc(var(--nav-height)+2rem)]">
+                <CardContent className="p-6">
+                  <h2 className="font-display text-xl font-semibold text-foreground">
+                    Secure Payment
+                  </h2>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Your card information is processed securely. HPG does not store card numbers.
+                  </p>
+
+                  {/* Consent */}
+                  <div className="mt-6 flex items-start gap-3">
+                    <Checkbox
+                      id="consent"
+                      checked={consent}
+                      onCheckedChange={(v) => setConsent(v === true)}
+                      className="mt-0.5"
+                    />
+                    <label htmlFor="consent" className="text-xs leading-relaxed text-muted-foreground">
+                      I confirm I am authorized to make this payment on behalf of the organization/project
+                      named above, and I understand this is an onboarding administrative fee tied to
+                      jurisdictional filing preparation. If HPG determines a jurisdictional change is needed,
+                      the fee may be adjusted and coordinated with me.
+                    </label>
                   </div>
 
-                  {/* Fee summary table */}
-                  <div className="mt-6 rounded-md border border-border bg-muted/50 p-4 text-sm">
-                    <div className="flex justify-between py-1">
-                      <span className="text-muted-foreground">Coverage scope</span>
-                      <span className="font-medium text-foreground">{coverageScope}</span>
-                    </div>
-                    <div className="flex justify-between py-1">
-                      <span className="text-muted-foreground">Government filing tier</span>
-                      <span className="font-medium text-foreground">{fee.tier}</span>
-                    </div>
-                    <Separator className="my-2" />
-                    <div className="flex justify-between py-1">
-                      <span className="font-semibold text-foreground">Total due</span>
-                      <span className="font-bold text-foreground">${fee.amount.toFixed(2)}</span>
-                    </div>
-                  </div>
+                  <Button
+                    className="mt-6 w-full"
+                    size="lg"
+                    disabled={!canPay}
+                    onClick={() => setShowCheckout(true)}
+                  >
+                    Proceed to Pay ${fee.amount.toFixed(2)}
+                  </Button>
 
-                  <div className="mt-4 space-y-3 text-sm text-muted-foreground">
-                    <p>
-                      <span className="font-semibold text-foreground">What this fee is for:</span>{" "}
-                      registered agent coordination (where applicable), secretary of state nonprofit
-                      registration filing support, and charitable solicitation / charitable deduction
-                      certificate preparation steps (where applicable).
-                    </p>
-                    <p>
-                      <span className="font-semibold text-foreground">What it is not:</span>{" "}
-                      it is not a donation, and it does not replace your fiscal sponsorship agreement
-                      obligations. This payment is generally treated as an administrative onboarding charge.
-                    </p>
-                  </div>
+                  <p className="mt-4 text-center text-xs text-muted-foreground">
+                    A receipt will be sent to finance automatically upon successful payment.
+                  </p>
+                  <p className="mt-2 rounded bg-muted/50 p-3 text-center text-xs text-muted-foreground">
+                    For receipt questions, reference your Stripe receipt email and include your
+                    organization name in communications.
+                  </p>
                 </CardContent>
               </Card>
             </motion.div>
           </div>
-
-          {/* ─── RIGHT: Secure Payment ─── */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.15 }}
-          >
-            <Card className="sticky top-[calc(var(--nav-height)+2rem)]">
-              <CardContent className="p-6">
-                <h2 className="font-display text-xl font-semibold text-foreground">
-                  Secure Payment
-                </h2>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  Enter card details below. Your card information is processed by Stripe.
-                  HPG does not store card numbers.
-                </p>
-
-                <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="billing">Billing Address</Label>
-                    <Input
-                      id="billing"
-                      placeholder="Street address"
-                      value={billingAddress}
-                      onChange={(e) => setBillingAddress(e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="postal">Postal / ZIP</Label>
-                    <Input
-                      id="postal"
-                      placeholder="Postal code"
-                      value={postalCode}
-                      onChange={(e) => setPostalCode(e.target.value)}
-                    />
-                  </div>
-                </div>
-
-                {/* Stripe Elements placeholder */}
-                <div className="mt-6 space-y-2">
-                  <Label>Card / Payment Method</Label>
-                  <div className="rounded-md border border-border bg-muted/30 p-6">
-                    <div className="flex flex-col items-center justify-center gap-2 py-8 text-center">
-                      <Shield className="h-8 w-8 text-muted-foreground/50" />
-                      <p className="text-sm font-medium text-muted-foreground">
-                        Stripe Payment Element
-                      </p>
-                      <p className="text-xs text-muted-foreground/70">
-                        Connect Stripe to enable secure card payments here
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Consent */}
-                <div className="mt-6 flex items-start gap-3">
-                  <Checkbox
-                    id="consent"
-                    checked={consent}
-                    onCheckedChange={(v) => setConsent(v === true)}
-                    className="mt-0.5"
-                  />
-                  <label htmlFor="consent" className="text-xs leading-relaxed text-muted-foreground">
-                    I confirm I am authorized to make this payment on behalf of the organization/project
-                    named above, and I understand this is an onboarding administrative fee tied to
-                    jurisdictional filing preparation. If HPG determines a jurisdictional change is needed,
-                    the fee may be adjusted and coordinated with me.
-                  </label>
-                </div>
-
-                <Button
-                  className="mt-6 w-full"
-                  size="lg"
-                  disabled={!consent || paying}
-                  onClick={async () => {
-                    setPaying(true);
-                    try {
-                      // TODO: Replace with Stripe checkout — for now send receipt email
-                      await sendReceiptEmail();
-                      toast({
-                        title: "Receipt sent",
-                        description: "A payment receipt has been sent to finance.",
-                      });
-                    } catch {
-                      toast({
-                        title: "Error",
-                        description: "Failed to process. Please try again.",
-                        variant: "destructive",
-                      });
-                    } finally {
-                      setPaying(false);
-                    }
-                  }}
-                >
-                  {paying ? "Processing…" : `Pay $${fee.amount.toFixed(2)}`}
-                </Button>
-
-                <p className="mt-4 text-center text-xs text-muted-foreground">
-                  Payment method is ready.
-                </p>
-                <p className="mt-2 rounded bg-muted/50 p-3 text-center text-xs text-muted-foreground">
-                  For receipt questions, reference your Stripe receipt email and include your
-                  organization name in communications.
-                </p>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </div>
+        )}
       </main>
 
       <Footer />
