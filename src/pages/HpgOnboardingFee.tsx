@@ -1,5 +1,7 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import { Shield, Copy, Check } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -57,6 +59,7 @@ function getFee(country: string, state: string) {
 }
 
 export default function HpgOnboardingFee() {
+  const { toast } = useToast();
   const today = new Date().toLocaleDateString("en-US", {
     month: "long",
     day: "numeric",
@@ -77,8 +80,31 @@ export default function HpgOnboardingFee() {
   const [billingAddress, setBillingAddress] = useState("");
   const [postalCode, setPostalCode] = useState("");
   const [consent, setConsent] = useState(false);
+  const [paying, setPaying] = useState(false);
 
   const fee = useMemo(() => getFee(country, state), [country, state]);
+
+  const sendReceiptEmail = async () => {
+    const id = crypto.randomUUID();
+    await supabase.functions.invoke("send-transactional-email", {
+      body: {
+        templateName: "onboarding-fee-receipt",
+        recipientEmail: "finance@humanitypathwaysglobal.com",
+        idempotencyKey: `onboarding-finance-${id}`,
+        templateData: {
+          orgName,
+          contact,
+          email,
+          phone,
+          country,
+          state,
+          tier: fee.tier,
+          amount: fee.amount.toFixed(2),
+          date: today,
+        },
+      },
+    });
+  };
 
   const stateLabel = country === "Canada" ? "Province" : "State / Province";
   const stateList =
@@ -343,9 +369,28 @@ export default function HpgOnboardingFee() {
                 <Button
                   className="mt-6 w-full"
                   size="lg"
-                  disabled={!consent}
+                  disabled={!consent || paying}
+                  onClick={async () => {
+                    setPaying(true);
+                    try {
+                      // TODO: Replace with Stripe checkout — for now send receipt email
+                      await sendReceiptEmail();
+                      toast({
+                        title: "Receipt sent",
+                        description: "A payment receipt has been sent to finance.",
+                      });
+                    } catch {
+                      toast({
+                        title: "Error",
+                        description: "Failed to process. Please try again.",
+                        variant: "destructive",
+                      });
+                    } finally {
+                      setPaying(false);
+                    }
+                  }}
                 >
-                  Pay ${fee.amount.toFixed(2)}
+                  {paying ? "Processing…" : `Pay $${fee.amount.toFixed(2)}`}
                 </Button>
 
                 <p className="mt-4 text-center text-xs text-muted-foreground">

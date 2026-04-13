@@ -27,6 +27,7 @@ import SeishinPlus from "./pages/initiatives/SeishinPlus.tsx";
 import CPBI from "./pages/initiatives/CPBI.tsx";
 import HpgExecutiveAcademy from "./pages/initiatives/HpgExecutiveAcademy.tsx";
 import HpgOnboardingFee from "./pages/HpgOnboardingFee.tsx";
+import Unsubscribe from "./pages/Unsubscribe.tsx";
 
 const queryClient = new QueryClient();
 const routerBasename = import.meta.env.BASE_URL.replace(/\/$/, "") || undefined;
@@ -61,6 +62,7 @@ const App = () => (
           <Route path="/cpbi" element={<CPBI />} />
           <Route path="/hpg-executive-academy" element={<HpgExecutiveAcademy />} />
           <Route path="/hpg-onboarding-fee" element={<HpgOnboardingFee />} />
+          <Route path="/unsubscribe" element={<Unsubscribe />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

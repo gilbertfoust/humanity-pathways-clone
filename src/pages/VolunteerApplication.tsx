@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -171,18 +172,40 @@ export default function VolunteerApplication() {
 
   const back = () => setStep((s) => Math.max(s - 1, 0));
 
-  const handleSubmit = () => {
-    // Save to localStorage for now (replace with backend later)
+  const handleSubmit = async () => {
+    // Save to localStorage as backup
     const submissions = JSON.parse(
       localStorage.getItem("hpg_volunteer_apps") || "[]"
     );
+    const id = crypto.randomUUID();
     const entry = {
       ...form,
-      id: crypto.randomUUID(),
+      id,
       submittedAt: new Date().toISOString(),
     };
     submissions.push(entry);
     localStorage.setItem("hpg_volunteer_apps", JSON.stringify(submissions));
+
+    // Send email to HR
+    const templateData = { ...form };
+    supabase.functions.invoke("send-transactional-email", {
+      body: {
+        templateName: "volunteer-application",
+        recipientEmail: "hr.staffing@humanitypathwaysglobal.com",
+        idempotencyKey: `volunteer-hr-${id}`,
+        templateData,
+      },
+    });
+
+    // Send email to Trello Recruitment board
+    supabase.functions.invoke("send-transactional-email", {
+      body: {
+        templateName: "volunteer-application",
+        recipientEmail: "gilbertfoust+liliiodopchnjng0z0sf@boards.trello.com",
+        idempotencyKey: `volunteer-trello-${id}`,
+        templateData,
+      },
+    });
 
     setSubmitted(true);
     toast({
