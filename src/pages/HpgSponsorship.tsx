@@ -54,6 +54,26 @@ export default function HpgSponsorship() {
         </div>
       </section>
 
+      {/* Umbrella Model */}
+      <section className="bg-muted py-20">
+        <div className="mx-auto max-w-5xl px-4">
+          <h2 className="mb-6 text-center font-display text-3xl font-bold text-foreground">HPG as Fiscal Sponsor &amp; Umbrella Organization</h2>
+          <p className="mx-auto mb-6 max-w-3xl text-center text-lg text-muted-foreground">
+            Humanity Pathways Global serves as a <strong className="text-foreground">fiscal sponsor and umbrella organization</strong> for global impact initiatives. As a registered 501(c)(3), HPG provides the legal, financial, and operational infrastructure that allows community-driven projects to receive tax-deductible donations, apply for grants, and operate with full nonprofit compliance — without needing to incorporate independently.
+          </p>
+          <div className="mx-auto max-w-3xl rounded-lg bg-card p-6 shadow-sm">
+            <h3 className="mb-3 font-display text-lg font-bold text-foreground">How the Umbrella Model Works</h3>
+            <ul className="space-y-2 text-sm text-muted-foreground">
+              <li className="flex gap-2"><span className="mt-0.5 text-primary">•</span><span><strong className="text-foreground">Legal Coverage:</strong> Sponsored initiatives operate under HPG's 501(c)(3) status, enabling tax-deductible fundraising.</span></li>
+              <li className="flex gap-2"><span className="mt-0.5 text-primary">•</span><span><strong className="text-foreground">Financial Oversight:</strong> HPG manages funds, ensures compliance, and provides transparent reporting to donors.</span></li>
+              <li className="flex gap-2"><span className="mt-0.5 text-primary">•</span><span><strong className="text-foreground">Operational Support:</strong> Grant writing, donor outreach, mentorship, and capacity building for each initiative.</span></li>
+              <li className="flex gap-2"><span className="mt-0.5 text-primary">•</span><span><strong className="text-foreground">Independence:</strong> Each initiative maintains its own mission, leadership, and programmatic autonomy while benefiting from HPG's infrastructure.</span></li>
+            </ul>
+          </div>
+          <p className="mt-6 text-center text-sm text-muted-foreground">Currently supporting <strong className="text-foreground">16 active programs</strong> across the U.S., Africa, Asia, and beyond. <Link to="/hpg-initiatives" className="text-primary hover:underline">View all initiatives →</Link></p>
+        </div>
+      </section>
+
       {/* What HPG Provides */}
       <section className="bg-background py-20">
         <div className="mx-auto max-w-5xl px-4">
