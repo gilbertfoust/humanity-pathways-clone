@@ -26,6 +26,11 @@ import HopeForAGoodLife from "./pages/initiatives/HopeForAGoodLife.tsx";
 import SeishinPlus from "./pages/initiatives/SeishinPlus.tsx";
 import CPBI from "./pages/initiatives/CPBI.tsx";
 import HpgExecutiveAcademy from "./pages/initiatives/HpgExecutiveAcademy.tsx";
+import HumblePathways from "./pages/initiatives/HumblePathways.tsx";
+import MKCFSierraLeone from "./pages/initiatives/MKCFSierraLeone.tsx";
+import YouthSTEMRobotics from "./pages/initiatives/YouthSTEMRobotics.tsx";
+import RainrootWATA from "./pages/initiatives/RainrootWATA.tsx";
+import HumaneInitiative from "./pages/initiatives/HumaneInitiative.tsx";
 import HpgOnboardingFee from "./pages/HpgOnboardingFee.tsx";
 import OnboardingThankYou from "./pages/OnboardingThankYou.tsx";
 import Unsubscribe from "./pages/Unsubscribe.tsx";
@@ -62,6 +67,11 @@ const App = () => (
           <Route path="/seishin-plus" element={<SeishinPlus />} />
           <Route path="/cpbi" element={<CPBI />} />
           <Route path="/hpg-executive-academy" element={<HpgExecutiveAcademy />} />
+          <Route path="/humble-pathways" element={<HumblePathways />} />
+          <Route path="/mkcf-sierra-leone" element={<MKCFSierraLeone />} />
+          <Route path="/youth-stem-robotics" element={<YouthSTEMRobotics />} />
+          <Route path="/rainroot-wata" element={<RainrootWATA />} />
+          <Route path="/humane-initiative" element={<HumaneInitiative />} />
           <Route path="/hpg-onboarding-fee" element={<HpgOnboardingFee />} />
           <Route path="/hpg-onboarding-fee/thank-you" element={<OnboardingThankYou />} />
           <Route path="/unsubscribe" element={<Unsubscribe />} />
