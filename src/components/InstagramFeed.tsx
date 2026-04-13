@@ -1,12 +1,25 @@
 import { Instagram } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import { useEffect, useRef } from "react";
 
 const IG_HANDLE = "humanity_pathways_global";
 const IG_URL = `https://www.instagram.com/${IG_HANDLE}`;
 
-// Placeholder grid showing the IG branding — links out to their live profile
 const InstagramFeed = () => {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Load the SnapWidget free Instagram feed widget
+    const script = document.createElement("script");
+    script.src = "https://snapwidget.com/js/snapwidget.js";
+    script.async = true;
+    document.body.appendChild(script);
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
+
   return (
     <section className="bg-background py-16">
       <div className="mx-auto max-w-6xl px-4">
@@ -21,31 +34,49 @@ const InstagramFeed = () => {
             <h2 className="font-display text-3xl font-bold text-foreground">Instagram</h2>
           </div>
           <p className="text-muted-foreground mb-8">
-            Follow <a href={IG_URL} target="_blank" rel="noopener noreferrer" className="text-primary font-semibold hover:underline">@{IG_HANDLE}</a> for the latest updates
-          </p>
-        </motion.div>
-
-        {/* Embedded Instagram profile via iframe-less approach — 
-             uses IG embed script for the profile timeline */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <motion.a
-              key={i}
+            Follow{" "}
+            <a
               href={IG_URL}
               target="_blank"
               rel="noopener noreferrer"
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.05 }}
-              className="group relative aspect-square overflow-hidden rounded-lg bg-muted"
+              className="text-primary font-semibold hover:underline"
             >
-              <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-primary/20 to-accent/20 group-hover:from-primary/40 group-hover:to-accent/40 transition-all duration-300">
-                <Instagram className="h-8 w-8 text-foreground/40 group-hover:text-foreground/70 transition-colors" />
-              </div>
-            </motion.a>
-          ))}
+              @{IG_HANDLE}
+            </a>{" "}
+            for the latest updates
+          </p>
+        </motion.div>
+
+        {/* Live Instagram feed via iframe embed */}
+        <div ref={containerRef} className="flex justify-center">
+          <iframe
+            src={`https://snapwidget.com/embed/1086498`}
+            className="snapwidget-widget w-full max-w-5xl border-0 overflow-hidden"
+            allowTransparency
+            style={{ border: "none", overflow: "hidden", height: 400 }}
+            title="Instagram Feed"
+            loading="lazy"
+          />
         </div>
+
+        {/* Fallback grid linking to IG profile */}
+        <noscript>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <a
+                key={i}
+                href={IG_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group relative aspect-square overflow-hidden rounded-lg bg-muted"
+              >
+                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-primary/20 to-accent/20">
+                  <Instagram className="h-8 w-8 text-foreground/40" />
+                </div>
+              </a>
+            ))}
+          </div>
+        </noscript>
 
         <div className="mt-8 text-center">
           <Button asChild variant="outline" size="lg">
