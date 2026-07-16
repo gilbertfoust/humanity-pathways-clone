@@ -552,7 +552,12 @@ export default function SponsorshipApplication() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
   const [refId, setRefId] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [hp, setHp] = useState("");
+  const idempotencyKeyRef = useRef<string>(crypto.randomUUID());
   const { toast } = useToast();
+
 
   const t = (key: TranslationKey) => translations[language][key] || translations.en[key];
   const optionLabel = (value: string) => optionTranslations[language][value] || value;
