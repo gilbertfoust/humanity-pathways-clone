@@ -698,12 +698,30 @@ export default function VolunteerApplication() {
           </motion.div>
         </AnimatePresence>
 
+        {/* Honeypot */}
+        <input
+          type="text"
+          name="website"
+          tabIndex={-1}
+          autoComplete="off"
+          value={hp}
+          onChange={(e) => setHp(e.target.value)}
+          className="hidden"
+          aria-hidden="true"
+        />
+
+        {submitError && (
+          <div role="alert" className="mt-6 rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+            {submitError}
+          </div>
+        )}
+
         {/* Nav buttons */}
         <div className="mt-10 flex items-center justify-between">
           <Button
             variant="outline"
             onClick={back}
-            disabled={step === 0}
+            disabled={step === 0 || submitting}
             className="gap-1"
           >
             <ChevronLeft className="h-4 w-4" /> Back
@@ -714,10 +732,11 @@ export default function VolunteerApplication() {
               Next <ChevronRight className="h-4 w-4" />
             </Button>
           ) : (
-            <Button onClick={handleSubmit} className="gap-1">
-              <CheckCircle2 className="h-4 w-4" /> Submit
+            <Button onClick={handleSubmit} disabled={submitting} className="gap-1">
+              <CheckCircle2 className="h-4 w-4" /> {submitting ? "Submitting…" : "Submit"}
             </Button>
           )}
+
         </div>
       </section>
 
