@@ -14,8 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      board_applications: {
+        Row: {
+          ack_queued: boolean
+          created_at: string
+          data: Json
+          email: string
+          full_name: string
+          id: string
+          idempotency_key: string | null
+          ip_hash: string | null
+          notification_queued: boolean
+          reference_id: string
+          seat_interest: string | null
+          updated_at: string
+          user_agent: string | null
+        }
+        Insert: {
+          ack_queued?: boolean
+          created_at?: string
+          data: Json
+          email: string
+          full_name: string
+          id?: string
+          idempotency_key?: string | null
+          ip_hash?: string | null
+          notification_queued?: boolean
+          reference_id: string
+          seat_interest?: string | null
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Update: {
+          ack_queued?: boolean
+          created_at?: string
+          data?: Json
+          email?: string
+          full_name?: string
+          id?: string
+          idempotency_key?: string | null
+          ip_hash?: string | null
+          notification_queued?: boolean
+          reference_id?: string
+          seat_interest?: string | null
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       contact_inquiries: {
         Row: {
+          ack_queued: boolean
           created_at: string
           email: string
           email_queued: boolean
@@ -24,12 +73,14 @@ export type Database = {
           ip_hash: string | null
           message: string
           name: string
+          notification_queued: boolean
           reference_id: string
           subject: string
           updated_at: string
           user_agent: string | null
         }
         Insert: {
+          ack_queued?: boolean
           created_at?: string
           email: string
           email_queued?: boolean
@@ -38,12 +89,14 @@ export type Database = {
           ip_hash?: string | null
           message: string
           name: string
+          notification_queued?: boolean
           reference_id: string
           subject: string
           updated_at?: string
           user_agent?: string | null
         }
         Update: {
+          ack_queued?: boolean
           created_at?: string
           email?: string
           email_queued?: boolean
@@ -52,6 +105,7 @@ export type Database = {
           ip_hash?: string | null
           message?: string
           name?: string
+          notification_queued?: boolean
           reference_id?: string
           subject?: string
           updated_at?: string
@@ -148,36 +202,42 @@ export type Database = {
       }
       newsletter_subscriptions: {
         Row: {
+          ack_queued: boolean
           created_at: string
           email: string
           email_queued: boolean
           id: string
           idempotency_key: string | null
           ip_hash: string | null
+          notification_queued: boolean
           reference_id: string
           unsubscribed_at: string | null
           updated_at: string
           user_agent: string | null
         }
         Insert: {
+          ack_queued?: boolean
           created_at?: string
           email: string
           email_queued?: boolean
           id?: string
           idempotency_key?: string | null
           ip_hash?: string | null
+          notification_queued?: boolean
           reference_id: string
           unsubscribed_at?: string | null
           updated_at?: string
           user_agent?: string | null
         }
         Update: {
+          ack_queued?: boolean
           created_at?: string
           email?: string
           email_queued?: boolean
           id?: string
           idempotency_key?: string | null
           ip_hash?: string | null
+          notification_queued?: boolean
           reference_id?: string
           unsubscribed_at?: string | null
           updated_at?: string
@@ -187,6 +247,7 @@ export type Database = {
       }
       sponsorship_applications: {
         Row: {
+          ack_queued: boolean
           created_at: string
           data: Json
           email: string
@@ -195,12 +256,14 @@ export type Database = {
           idempotency_key: string | null
           ip_hash: string | null
           language: string | null
+          notification_queued: boolean
           organization_name: string | null
           reference_id: string
           updated_at: string
           user_agent: string | null
         }
         Insert: {
+          ack_queued?: boolean
           created_at?: string
           data: Json
           email: string
@@ -209,12 +272,14 @@ export type Database = {
           idempotency_key?: string | null
           ip_hash?: string | null
           language?: string | null
+          notification_queued?: boolean
           organization_name?: string | null
           reference_id: string
           updated_at?: string
           user_agent?: string | null
         }
         Update: {
+          ack_queued?: boolean
           created_at?: string
           data?: Json
           email?: string
@@ -223,6 +288,7 @@ export type Database = {
           idempotency_key?: string | null
           ip_hash?: string | null
           language?: string | null
+          notification_queued?: boolean
           organization_name?: string | null
           reference_id?: string
           updated_at?: string
@@ -292,6 +358,7 @@ export type Database = {
       }
       volunteer_applications: {
         Row: {
+          ack_queued: boolean
           created_at: string
           data: Json
           email: string
@@ -300,12 +367,14 @@ export type Database = {
           id: string
           idempotency_key: string | null
           ip_hash: string | null
+          notification_queued: boolean
           position: string | null
           reference_id: string
           updated_at: string
           user_agent: string | null
         }
         Insert: {
+          ack_queued?: boolean
           created_at?: string
           data: Json
           email: string
@@ -314,12 +383,14 @@ export type Database = {
           id?: string
           idempotency_key?: string | null
           ip_hash?: string | null
+          notification_queued?: boolean
           position?: string | null
           reference_id: string
           updated_at?: string
           user_agent?: string | null
         }
         Update: {
+          ack_queued?: boolean
           created_at?: string
           data?: Json
           email?: string
@@ -328,6 +399,7 @@ export type Database = {
           id?: string
           idempotency_key?: string | null
           ip_hash?: string | null
+          notification_queued?: boolean
           position?: string | null
           reference_id?: string
           updated_at?: string

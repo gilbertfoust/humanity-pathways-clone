@@ -83,7 +83,8 @@ export default function ContactUs() {
                 <CheckCircle2 className="mx-auto h-12 w-12 text-primary" />
                 <h3 className="mt-4 font-display text-2xl font-semibold">Message received</h3>
                 <p className="mt-2 text-muted-foreground">
-                  Thank you — we'll be in touch shortly.
+                  Thank you — your message was received and a confirmation email has been
+                  queued to your address. Our team will follow up shortly.
                 </p>
                 <p className="mt-4 text-sm text-muted-foreground">
                   Reference: <span className="font-mono font-medium text-foreground">{submitted.referenceId}</span>

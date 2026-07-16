@@ -25,3 +25,11 @@ class IO {
   thresholds = [];
 }
 (globalThis as unknown as { IntersectionObserver: typeof IO }).IntersectionObserver = IO;
+
+// jsdom lacks ResizeObserver — Radix UI (Checkbox/Select) needs it.
+class RO {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+(globalThis as unknown as { ResizeObserver: typeof RO }).ResizeObserver = RO;

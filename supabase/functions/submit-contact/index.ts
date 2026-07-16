@@ -1,16 +1,8 @@
 import { z } from 'npm:zod@3.23.8'
 import {
-  corsHeaders,
-  json,
-  getServiceClient,
-  getClientIp,
-  hashIp,
-  makeReferenceId,
-  sanitizeText,
-  checkHoneypot,
-  rateLimit,
-  logEvent,
-  sendTransactionalEmail,
+  corsHeaders, json, getServiceClient, getClientIp, hashIp,
+  makeReferenceId, sanitizeText, checkHoneypot, rateLimit, logEvent,
+  queueEmailWithLog,
 } from '../_shared/submission-helpers.ts'
 
 const FORM_TYPE = 'contact'
@@ -35,11 +27,7 @@ Deno.serve(async (req) => {
   const userAgent = req.headers.get('user-agent')?.slice(0, 500) ?? undefined
 
   let raw: Record<string, unknown>
-  try {
-    raw = await req.json()
-  } catch {
-    return json({ error: 'Invalid JSON' }, 400)
-  }
+  try { raw = await req.json() } catch { return json({ error: 'Invalid JSON' }, 400) }
 
   if (checkHoneypot(raw)) {
     await logEvent(supabase, { formType: FORM_TYPE, eventType: 'honeypot_blocked', ipHash, userAgent })
@@ -68,55 +56,91 @@ Deno.serve(async (req) => {
   const message = sanitizeText(data.message, 5000)
   const idempotencyKey = data.idempotencyKey ?? crypto.randomUUID()
 
-  // Idempotency: return existing record if replayed
+  // Idempotency — replayed submission returns the original record.
   const { data: existing } = await supabase
-    .from('contact_inquiries').select('id, reference_id, email_queued')
-    .eq('idempotency_key', idempotencyKey).maybeSingle()
-  if (existing) {
-    return json({ success: true, referenceId: existing.reference_id, duplicate: true })
-  }
-
-  const referenceId = makeReferenceId('C')
-  const { data: inserted, error: insertError } = await supabase
     .from('contact_inquiries')
-    .insert({
-      reference_id: referenceId, idempotency_key: idempotencyKey,
-      name, email, subject, message, ip_hash: ipHash, user_agent: userAgent,
-    })
-    .select('id, reference_id').single()
+    .select('id, reference_id, notification_queued, ack_queued')
+    .eq('idempotency_key', idempotencyKey).maybeSingle()
 
-  if (insertError || !inserted) {
-    console.error('contact insert failed', insertError)
-    await logEvent(supabase, { formType: FORM_TYPE, eventType: 'insert_failed', ipHash, userAgent, details: { error: insertError?.message } })
-    return json({ error: 'Could not save your message. Please try again.' }, 500)
-  }
+  let submissionId: string
+  let referenceId: string
+  const isDuplicate = !!existing
 
-  await logEvent(supabase, {
-    formType: FORM_TYPE, eventType: 'submitted', ipHash, userAgent,
-    referenceId, submissionId: inserted.id,
-  })
-
-  // Send notification to org
-  const emailRes = await sendTransactionalEmail({
-    templateName: 'contact-inquiry',
-    recipientEmail: RECIPIENT,
-    idempotencyKey: `contact-${inserted.id}`,
-    templateData: { name, email, subject, message, referenceId },
-  })
-
-  if (!emailRes.ok) {
+  if (existing) {
+    submissionId = existing.id
+    referenceId = existing.reference_id
     await logEvent(supabase, {
-      formType: FORM_TYPE, eventType: 'email_failed', ipHash, userAgent,
-      referenceId, submissionId: inserted.id, details: { status: emailRes.status, body: emailRes.body },
+      formType: FORM_TYPE, eventType: 'duplicate_retry', ipHash, userAgent,
+      referenceId, submissionId,
+      details: {
+        notification_queued: existing.notification_queued,
+        ack_queued: existing.ack_queued,
+      },
     })
-    return json({ error: 'Your message was saved but we could not send the notification. Our team will follow up.', referenceId }, 502)
+    // If both queues already succeeded, short-circuit.
+    if (existing.notification_queued && existing.ack_queued) {
+      return json({ success: true, referenceId, duplicate: true })
+    }
+  } else {
+    referenceId = makeReferenceId('C')
+    const { data: inserted, error: insertError } = await supabase
+      .from('contact_inquiries')
+      .insert({
+        reference_id: referenceId, idempotency_key: idempotencyKey,
+        name, email, subject, message, ip_hash: ipHash, user_agent: userAgent,
+      })
+      .select('id, reference_id').single()
+
+    if (insertError || !inserted) {
+      console.error('contact insert failed', insertError)
+      await logEvent(supabase, { formType: FORM_TYPE, eventType: 'insert_failed', ipHash, userAgent, details: { error: insertError?.message } })
+      return json({ error: 'Could not save your message. Please try again.' }, 500)
+    }
+    submissionId = inserted.id
+    await logEvent(supabase, {
+      formType: FORM_TYPE, eventType: 'submitted', ipHash, userAgent,
+      referenceId, submissionId,
+    })
   }
 
-  await supabase.from('contact_inquiries').update({ email_queued: true }).eq('id', inserted.id)
-  await logEvent(supabase, {
-    formType: FORM_TYPE, eventType: 'email_queued', ipHash, userAgent,
-    referenceId, submissionId: inserted.id,
-  })
+  // Queue internal notification + applicant acknowledgement in parallel.
+  const templateData = { name, email, subject, message, referenceId }
+  const [notif, ack] = await Promise.all([
+    queueEmailWithLog(supabase, {
+      formType: FORM_TYPE, role: 'notification',
+      templateName: 'contact-inquiry', recipientEmail: RECIPIENT,
+      idempotencyKey: `contact-notif-${submissionId}`,
+      templateData, referenceId, submissionId, ipHash, userAgent,
+    }),
+    queueEmailWithLog(supabase, {
+      formType: FORM_TYPE, role: 'acknowledgement',
+      templateName: 'contact-acknowledgement', recipientEmail: email,
+      idempotencyKey: `contact-ack-${submissionId}`,
+      templateData, referenceId, submissionId, ipHash, userAgent,
+    }),
+  ])
 
-  return json({ success: true, referenceId })
+  const patch: Record<string, boolean> = {}
+  if (notif.ok) patch.notification_queued = true
+  if (ack.ok) patch.ack_queued = true
+  if (Object.keys(patch).length > 0) {
+    await supabase.from('contact_inquiries').update(patch).eq('id', submissionId)
+  }
+
+  if (!notif.ok || !ack.ok) {
+    return json({
+      error: !notif.ok
+        ? 'Your message was saved but we could not queue the notification. Our team will follow up.'
+        : 'Your message was saved but the acknowledgement email could not be queued. Please save your reference number.',
+      referenceId,
+      queued: { notification: notif.ok, acknowledgement: ack.ok },
+    }, 502)
+  }
+
+  return json({
+    success: true,
+    referenceId,
+    duplicate: isDuplicate,
+    queued: { notification: true, acknowledgement: true },
+  })
 })

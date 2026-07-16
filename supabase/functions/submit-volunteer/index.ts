@@ -2,7 +2,7 @@ import { z } from 'npm:zod@3.23.8'
 import {
   corsHeaders, json, getServiceClient, getClientIp, hashIp,
   makeReferenceId, sanitizeText, checkHoneypot, rateLimit, logEvent,
-  sendTransactionalEmail,
+  queueEmailWithLog,
 } from '../_shared/submission-helpers.ts'
 
 const FORM_TYPE = 'volunteer'
@@ -59,9 +59,7 @@ Deno.serve(async (req) => {
     })
     return json({ error: 'Please review the form and try again.', fieldErrors: parsed.error.flatten().fieldErrors }, 400)
   }
-  if (!parsed.data.consent) {
-    return json({ error: 'Consent is required.' }, 400)
-  }
+  if (!parsed.data.consent) return json({ error: 'Consent is required.' }, 400)
 
   const rl = await rateLimit(supabase, FORM_TYPE, ipHash, 3600, 3)
   if (rl.limited) {
@@ -70,7 +68,6 @@ Deno.serve(async (req) => {
   }
 
   const d = parsed.data
-  // Sanitize string fields
   const clean: Record<string, unknown> = { ...d }
   for (const k of Object.keys(clean)) {
     const v = clean[k]
@@ -81,57 +78,89 @@ Deno.serve(async (req) => {
   const idempotencyKey = d.idempotencyKey ?? crypto.randomUUID()
 
   const { data: existing } = await supabase
-    .from('volunteer_applications').select('id, reference_id')
-    .eq('idempotency_key', idempotencyKey).maybeSingle()
-  if (existing) return json({ success: true, referenceId: existing.reference_id, duplicate: true })
-
-  const referenceId = makeReferenceId('V')
-  const { data: inserted, error: insertError } = await supabase
     .from('volunteer_applications')
-    .insert({
-      reference_id: referenceId, idempotency_key: idempotencyKey,
-      full_name: clean.fullName as string, email: clean.email as string,
-      position: clean.position as string, data: clean,
-      ip_hash: ipHash, user_agent: userAgent,
-    }).select('id, reference_id').single()
+    .select('id, reference_id, notification_queued, ack_queued')
+    .eq('idempotency_key', idempotencyKey).maybeSingle()
 
-  if (insertError || !inserted) {
-    console.error('volunteer insert failed', insertError)
-    await logEvent(supabase, { formType: FORM_TYPE, eventType: 'insert_failed', ipHash, userAgent, details: { error: insertError?.message } })
-    return json({ error: 'Could not save your application. Please try again.' }, 500)
+  let submissionId: string
+  let referenceId: string
+  const isDuplicate = !!existing
+
+  if (existing) {
+    submissionId = existing.id
+    referenceId = existing.reference_id
+    await logEvent(supabase, {
+      formType: FORM_TYPE, eventType: 'duplicate_retry', ipHash, userAgent,
+      referenceId, submissionId,
+      details: { notification_queued: existing.notification_queued, ack_queued: existing.ack_queued },
+    })
+    if (existing.notification_queued && existing.ack_queued) {
+      return json({ success: true, referenceId, duplicate: true })
+    }
+  } else {
+    referenceId = makeReferenceId('V')
+    const { data: inserted, error: insertError } = await supabase
+      .from('volunteer_applications')
+      .insert({
+        reference_id: referenceId, idempotency_key: idempotencyKey,
+        full_name: clean.fullName as string, email: clean.email as string,
+        position: clean.position as string, data: clean,
+        ip_hash: ipHash, user_agent: userAgent,
+      }).select('id, reference_id').single()
+    if (insertError || !inserted) {
+      console.error('volunteer insert failed', insertError)
+      await logEvent(supabase, { formType: FORM_TYPE, eventType: 'insert_failed', ipHash, userAgent, details: { error: insertError?.message } })
+      return json({ error: 'Could not save your application. Please try again.' }, 500)
+    }
+    submissionId = inserted.id
+    await logEvent(supabase, {
+      formType: FORM_TYPE, eventType: 'submitted', ipHash, userAgent,
+      referenceId, submissionId,
+    })
   }
 
-  await logEvent(supabase, {
-    formType: FORM_TYPE, eventType: 'submitted', ipHash, userAgent,
-    referenceId, submissionId: inserted.id,
-  })
-
   const templateData = { ...clean, referenceId }
-  const [hrRes, trelloRes] = await Promise.all([
-    sendTransactionalEmail({
+  const [hr, ack, trello] = await Promise.all([
+    queueEmailWithLog(supabase, {
+      formType: FORM_TYPE, role: 'notification',
       templateName: 'volunteer-application', recipientEmail: HR_RECIPIENT,
-      idempotencyKey: `volunteer-hr-${inserted.id}`, templateData,
+      idempotencyKey: `volunteer-hr-${submissionId}`,
+      templateData, referenceId, submissionId, ipHash, userAgent,
     }),
-    sendTransactionalEmail({
+    queueEmailWithLog(supabase, {
+      formType: FORM_TYPE, role: 'acknowledgement',
+      templateName: 'volunteer-acknowledgement', recipientEmail: clean.email as string,
+      idempotencyKey: `volunteer-ack-${submissionId}`,
+      templateData: { fullName: clean.fullName, position: clean.position, referenceId },
+      referenceId, submissionId, ipHash, userAgent,
+    }),
+    queueEmailWithLog(supabase, {
+      formType: FORM_TYPE, role: 'trello',
       templateName: 'volunteer-application', recipientEmail: TRELLO_RECIPIENT,
-      idempotencyKey: `volunteer-trello-${inserted.id}`, templateData,
+      idempotencyKey: `volunteer-trello-${submissionId}`,
+      templateData, referenceId, submissionId, ipHash, userAgent,
     }),
   ])
 
-  // Require the HR email to queue; Trello is best-effort.
-  if (!hrRes.ok) {
-    await logEvent(supabase, {
-      formType: FORM_TYPE, eventType: 'email_failed', ipHash, userAgent,
-      referenceId, submissionId: inserted.id, details: { hr: hrRes, trello: trelloRes },
-    })
-    return json({ error: 'Your application was saved but the notification failed. Our team will follow up.', referenceId }, 502)
+  const patch: Record<string, boolean> = {}
+  if (hr.ok) patch.notification_queued = true
+  if (ack.ok) patch.ack_queued = true
+  if (Object.keys(patch).length > 0) {
+    await supabase.from('volunteer_applications').update(patch).eq('id', submissionId)
   }
 
-  await supabase.from('volunteer_applications').update({ email_queued: true }).eq('id', inserted.id)
-  await logEvent(supabase, {
-    formType: FORM_TYPE, eventType: 'email_queued', ipHash, userAgent,
-    referenceId, submissionId: inserted.id, details: { trelloOk: trelloRes.ok },
-  })
+  if (!hr.ok || !ack.ok) {
+    return json({
+      error: !hr.ok
+        ? 'Your application was saved but the internal notification could not be queued. Our team will follow up.'
+        : 'Your application was saved but the acknowledgement email could not be queued. Please save your reference number.',
+      referenceId,
+      queued: { notification: hr.ok, acknowledgement: ack.ok, trello: trello.ok },
+    }, 502)
+  }
 
-  return json({ success: true, referenceId })
+  return json({
+    success: true, referenceId, duplicate: isDuplicate,
+    queued: { notification: true, acknowledgement: true, trello: trello.ok },
+  })
 })

@@ -147,3 +147,47 @@ export async function sendTransactionalEmail(params: {
     return { ok: false, status: 0, body: { error: String(err) } }
   }
 }
+
+/**
+ * Queue an email and log the result as its own audit event, using a stable
+ * per-role idempotency key so retries are safe. Never claims delivery — only
+ * that the email was received and queued (or that the queue attempt failed).
+ */
+export async function queueEmailWithLog(
+  supabase: SupabaseClient,
+  args: {
+    formType: string
+    role: string // e.g. 'notification' | 'acknowledgement' | 'trello'
+    templateName: string
+    recipientEmail: string
+    idempotencyKey: string
+    templateData: Record<string, unknown>
+    referenceId?: string
+    submissionId?: string
+    ipHash?: string
+    userAgent?: string
+  }
+): Promise<{ ok: boolean; status: number }> {
+  const res = await sendTransactionalEmail({
+    templateName: args.templateName,
+    recipientEmail: args.recipientEmail,
+    idempotencyKey: args.idempotencyKey,
+    templateData: args.templateData,
+  })
+  await logEvent(supabase, {
+    formType: args.formType,
+    eventType: res.ok ? 'email_queued' : 'email_failed',
+    ipHash: args.ipHash,
+    userAgent: args.userAgent,
+    referenceId: args.referenceId,
+    submissionId: args.submissionId,
+    details: {
+      role: args.role,
+      template: args.templateName,
+      recipient: args.recipientEmail,
+      status: res.status,
+      ...(res.ok ? {} : { body: res.body }),
+    },
+  })
+  return { ok: res.ok, status: res.status }
+}

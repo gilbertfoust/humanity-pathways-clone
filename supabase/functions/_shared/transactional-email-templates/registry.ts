@@ -14,6 +14,12 @@ import { template as sponsorshipApplication } from './sponsorship-application.ts
 import { template as onboardingFeeReceipt } from './onboarding-fee-receipt.tsx'
 import { template as contactInquiry } from './contact-inquiry.tsx'
 import { template as newsletterSubscription } from './newsletter-subscription.tsx'
+import { template as contactAcknowledgement } from './contact-acknowledgement.tsx'
+import { template as newsletterAcknowledgement } from './newsletter-acknowledgement.tsx'
+import { template as volunteerAcknowledgement } from './volunteer-acknowledgement.tsx'
+import { template as sponsorshipAcknowledgement } from './sponsorship-acknowledgement.tsx'
+import { template as boardApplication } from './board-application.tsx'
+import { template as boardAcknowledgement } from './board-acknowledgement.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'volunteer-application': volunteerApplication,
@@ -21,4 +27,10 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'onboarding-fee-receipt': onboardingFeeReceipt,
   'contact-inquiry': contactInquiry,
   'newsletter-subscription': newsletterSubscription,
+  'contact-acknowledgement': contactAcknowledgement,
+  'newsletter-acknowledgement': newsletterAcknowledgement,
+  'volunteer-acknowledgement': volunteerAcknowledgement,
+  'sponsorship-acknowledgement': sponsorshipAcknowledgement,
+  'board-application': boardApplication,
+  'board-acknowledgement': boardAcknowledgement,
 }
