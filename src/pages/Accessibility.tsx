@@ -35,10 +35,11 @@ export default function Accessibility() {
 
           <h2 className="font-display">Known limitations</h2>
           <p>
-            Some embedded third-party content (for example the Tumblr blog feed, the
-            Instagram grid, and Mapbox map tiles) is rendered by external services. We
-            work to keep our own wrappers accessible, but we do not control the internal
-            markup of these embeds.
+            Some embedded third-party content (for example the Tumblr blog feed and
+            Mapbox map tiles) is rendered by external services. We work to keep our own
+            wrappers accessible, but we do not control the internal markup of these
+            embeds. Instagram content is not embedded on this site; the Instagram
+            section is a plain link to our external profile.
           </p>
 
           <h2 className="font-display">Report a barrier</h2>

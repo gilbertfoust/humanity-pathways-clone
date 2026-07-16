@@ -75,7 +75,7 @@ export default function Privacy() {
             <li>Lovable Cloud / Supabase — database, authentication, and edge functions</li>
             <li>Mapbox — map tiles for the staff and board globe</li>
             <li>Tumblr — public blog feed embedded on the blog page</li>
-            <li>Instagram — public feed embedded on the site</li>
+            <li>Instagram — official profile linked from the site (posts are not embedded here)</li>
             <li>Stripe — payment processing for the onboarding fee</li>
             <li>Zeffy, Every.org, and the Rwanda donation portal — external donation platforms linked from the site</li>
           </ul>
