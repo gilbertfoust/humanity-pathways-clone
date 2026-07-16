@@ -9,6 +9,14 @@ const footerLinks = [
   { label: "GYLFH", href: "/gylfh" },
 ];
 
+const legalLinks = [
+  { label: "Annual Reports", href: "/annual-reports" },
+  { label: "Privacy", href: "/privacy" },
+  { label: "Data Use", href: "/data-use" },
+  { label: "Accessibility", href: "/accessibility" },
+  { label: "Terms of Use", href: "/terms" },
+];
+
 const socials = [
   { icon: Facebook, href: "https://www.facebook.com/profile.php?id=61559558202133", label: "Facebook" },
   { icon: Instagram, href: "https://www.instagram.com/humanity_pathways_global", label: "Instagram" },
