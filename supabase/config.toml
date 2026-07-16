@@ -32,3 +32,7 @@ verify_jwt = false
 
 [functions.submit-sponsorship]
 verify_jwt = false
+
+[functions.submit-board]
+verify_jwt = false
+
