@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
@@ -117,7 +117,13 @@ export default function VolunteerApplication() {
   const [form, setForm] = useState<FormData>(emptyForm);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
+  const [refId, setRefId] = useState<string>("");
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [hp, setHp] = useState("");
+  const idempotencyKeyRef = useRef<string>(crypto.randomUUID());
   const { toast } = useToast();
+
 
   const progress = ((step + 1) / STEPS.length) * 100;
 
@@ -173,47 +179,35 @@ export default function VolunteerApplication() {
   const back = () => setStep((s) => Math.max(s - 1, 0));
 
   const handleSubmit = async () => {
-    // Save to localStorage as backup
-    const submissions = JSON.parse(
-      localStorage.getItem("hpg_volunteer_apps") || "[]"
-    );
-    const id = crypto.randomUUID();
-    const entry = {
-      ...form,
-      id,
-      submittedAt: new Date().toISOString(),
-    };
-    submissions.push(entry);
-    localStorage.setItem("hpg_volunteer_apps", JSON.stringify(submissions));
-
-    // Send email to HR
-    const templateData = { ...form };
-    supabase.functions.invoke("send-transactional-email", {
-      body: {
-        templateName: "volunteer-application",
-        recipientEmail: "hr.staffing@humanitypathwaysglobal.com",
-        idempotencyKey: `volunteer-hr-${id}`,
-        templateData,
-      },
-    });
-
-    // Send email to Trello Recruitment board
-    supabase.functions.invoke("send-transactional-email", {
-      body: {
-        templateName: "volunteer-application",
-        recipientEmail: "gilbertfoust+liliiodopchnjng0z0sf@boards.trello.com",
-        idempotencyKey: `volunteer-trello-${id}`,
-        templateData,
-      },
-    });
-
-    setSubmitted(true);
-    toast({
-      title: "Application received!",
-      description:
-        "Your submission has been recorded. A receipt email should arrive shortly.",
-    });
+    if (!validateStep()) return;
+    setSubmitError(null);
+    setSubmitting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("submit-volunteer", {
+        body: { ...form, _hp: hp, idempotencyKey: idempotencyKeyRef.current },
+      });
+      if (error || !data?.success) {
+        const msg = (data as { error?: string } | null)?.error || error?.message ||
+          "We couldn't submit your application. Please try again.";
+        setSubmitError(msg);
+        toast({ title: "Submission failed", description: msg, variant: "destructive" });
+        return;
+      }
+      setRefId(data.referenceId);
+      setSubmitted(true);
+      toast({
+        title: "Application received!",
+        description: `Reference: ${data.referenceId}`,
+      });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Network error. Please try again.";
+      setSubmitError(msg);
+      toast({ title: "Submission failed", description: msg, variant: "destructive" });
+    } finally {
+      setSubmitting(false);
+    }
   };
+
 
   /* ── field helper ────────────────────────── */
 
@@ -622,19 +616,26 @@ export default function VolunteerApplication() {
             Thank You!
           </h2>
           <p className="mt-4 text-muted-foreground">
-            Your submission has been recorded successfully. A receipt email
-            should arrive shortly at <strong>{form.email}</strong>.
+            Your application has been recorded and our team has been notified.
           </p>
+          {refId && (
+            <p className="mt-4 text-sm text-muted-foreground">
+              Reference: <span className="font-mono font-medium text-foreground">{refId}</span>
+            </p>
+          )}
           <Button
             className="mt-8"
             onClick={() => {
               setForm(emptyForm);
               setStep(0);
               setSubmitted(false);
+              setRefId("");
+              idempotencyKeyRef.current = crypto.randomUUID();
             }}
           >
             Start New Application
           </Button>
+
         </section>
         <Footer />
       </div>
@@ -697,12 +698,30 @@ export default function VolunteerApplication() {
           </motion.div>
         </AnimatePresence>
 
+        {/* Honeypot */}
+        <input
+          type="text"
+          name="website"
+          tabIndex={-1}
+          autoComplete="off"
+          value={hp}
+          onChange={(e) => setHp(e.target.value)}
+          className="hidden"
+          aria-hidden="true"
+        />
+
+        {submitError && (
+          <div role="alert" className="mt-6 rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+            {submitError}
+          </div>
+        )}
+
         {/* Nav buttons */}
         <div className="mt-10 flex items-center justify-between">
           <Button
             variant="outline"
             onClick={back}
-            disabled={step === 0}
+            disabled={step === 0 || submitting}
             className="gap-1"
           >
             <ChevronLeft className="h-4 w-4" /> Back
@@ -713,10 +732,11 @@ export default function VolunteerApplication() {
               Next <ChevronRight className="h-4 w-4" />
             </Button>
           ) : (
-            <Button onClick={handleSubmit} className="gap-1">
-              <CheckCircle2 className="h-4 w-4" /> Submit
+            <Button onClick={handleSubmit} disabled={submitting} className="gap-1">
+              <CheckCircle2 className="h-4 w-4" /> {submitting ? "Submitting…" : "Submit"}
             </Button>
           )}
+
         </div>
       </section>
 

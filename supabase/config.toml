@@ -20,3 +20,15 @@ verify_jwt = false
 
 [functions.payments-webhook]
 verify_jwt = false
+
+[functions.submit-contact]
+verify_jwt = false
+
+[functions.submit-newsletter]
+verify_jwt = false
+
+[functions.submit-volunteer]
+verify_jwt = false
+
+[functions.submit-sponsorship]
+verify_jwt = false

@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      contact_inquiries: {
+        Row: {
+          created_at: string
+          email: string
+          email_queued: boolean
+          id: string
+          idempotency_key: string | null
+          ip_hash: string | null
+          message: string
+          name: string
+          reference_id: string
+          subject: string
+          updated_at: string
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          email_queued?: boolean
+          id?: string
+          idempotency_key?: string | null
+          ip_hash?: string | null
+          message: string
+          name: string
+          reference_id: string
+          subject: string
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          email_queued?: boolean
+          id?: string
+          idempotency_key?: string | null
+          ip_hash?: string | null
+          message?: string
+          name?: string
+          reference_id?: string
+          subject?: string
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       email_send_log: {
         Row: {
           created_at: string
@@ -101,6 +146,126 @@ export type Database = {
         }
         Relationships: []
       }
+      newsletter_subscriptions: {
+        Row: {
+          created_at: string
+          email: string
+          email_queued: boolean
+          id: string
+          idempotency_key: string | null
+          ip_hash: string | null
+          reference_id: string
+          unsubscribed_at: string | null
+          updated_at: string
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          email_queued?: boolean
+          id?: string
+          idempotency_key?: string | null
+          ip_hash?: string | null
+          reference_id: string
+          unsubscribed_at?: string | null
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          email_queued?: boolean
+          id?: string
+          idempotency_key?: string | null
+          ip_hash?: string | null
+          reference_id?: string
+          unsubscribed_at?: string | null
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
+      sponsorship_applications: {
+        Row: {
+          created_at: string
+          data: Json
+          email: string
+          email_queued: boolean
+          id: string
+          idempotency_key: string | null
+          ip_hash: string | null
+          language: string | null
+          organization_name: string | null
+          reference_id: string
+          updated_at: string
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string
+          data: Json
+          email: string
+          email_queued?: boolean
+          id?: string
+          idempotency_key?: string | null
+          ip_hash?: string | null
+          language?: string | null
+          organization_name?: string | null
+          reference_id: string
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string
+          data?: Json
+          email?: string
+          email_queued?: boolean
+          id?: string
+          idempotency_key?: string | null
+          ip_hash?: string | null
+          language?: string | null
+          organization_name?: string | null
+          reference_id?: string
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
+      submission_events: {
+        Row: {
+          created_at: string
+          details: Json | null
+          event_type: string
+          form_type: string
+          id: string
+          ip_hash: string | null
+          reference_id: string | null
+          submission_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string
+          details?: Json | null
+          event_type: string
+          form_type: string
+          id?: string
+          ip_hash?: string | null
+          reference_id?: string | null
+          submission_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string
+          details?: Json | null
+          event_type?: string
+          form_type?: string
+          id?: string
+          ip_hash?: string | null
+          reference_id?: string | null
+          submission_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       suppressed_emails: {
         Row: {
           created_at: string
@@ -125,6 +290,51 @@ export type Database = {
         }
         Relationships: []
       }
+      volunteer_applications: {
+        Row: {
+          created_at: string
+          data: Json
+          email: string
+          email_queued: boolean
+          full_name: string
+          id: string
+          idempotency_key: string | null
+          ip_hash: string | null
+          position: string | null
+          reference_id: string
+          updated_at: string
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string
+          data: Json
+          email: string
+          email_queued?: boolean
+          full_name: string
+          id?: string
+          idempotency_key?: string | null
+          ip_hash?: string | null
+          position?: string | null
+          reference_id: string
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string
+          data?: Json
+          email?: string
+          email_queued?: boolean
+          full_name?: string
+          id?: string
+          idempotency_key?: string | null
+          ip_hash?: string | null
+          position?: string | null
+          reference_id?: string
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -134,6 +344,7 @@ export type Database = {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
       }
+      email_queue_dispatch: { Args: never; Returns: undefined }
       enqueue_email: {
         Args: { payload: Json; queue_name: string }
         Returns: number

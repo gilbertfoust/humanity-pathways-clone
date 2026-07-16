@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
@@ -552,7 +552,12 @@ export default function SponsorshipApplication() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
   const [refId, setRefId] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [hp, setHp] = useState("");
+  const idempotencyKeyRef = useRef<string>(crypto.randomUUID());
   const { toast } = useToast();
+
 
   const t = (key: TranslationKey) => translations[language][key] || translations.en[key];
   const optionLabel = (value: string) => optionTranslations[language][value] || value;
@@ -610,36 +615,39 @@ export default function SponsorshipApplication() {
   const back = () => setStep((s) => Math.max(s - 1, 0));
 
   const handleSubmit = async () => {
-    const id = `HPG-S-${Date.now().toString(36).toUpperCase()}`;
-    const submissions = JSON.parse(
-      localStorage.getItem("hpg_sponsorship_apps") || "[]"
-    );
-    submissions.push({ ...form, id, language, submittedAt: new Date().toISOString() });
-    localStorage.setItem("hpg_sponsorship_apps", JSON.stringify(submissions));
-
-    const templateData = { ...form, language };
-    supabase.functions.invoke("send-transactional-email", {
-      body: {
-        templateName: "sponsorship-application",
-        recipientEmail: "development@humanitypathwaysglobal.com",
-        idempotencyKey: `sponsorship-dev-${id}`,
-        templateData,
-      },
-    });
-
-    supabase.functions.invoke("send-transactional-email", {
-      body: {
-        templateName: "sponsorship-application",
-        recipientEmail: "gilbertfoust+dc3ehestj0cnjjib3dw7@boards.trello.com",
-        idempotencyKey: `sponsorship-trello-${id}`,
-        templateData,
-      },
-    });
-
-    setRefId(id);
-    setSubmitted(true);
-    toast({ title: t("toastReceivedTitle"), description: t("toastReceivedBody") });
+    if (!validateStep()) return;
+    setSubmitError(null);
+    setSubmitting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("submit-sponsorship", {
+        body: {
+          organizationName: form.orgName,
+          contactEmail: form.email,
+          language,
+          data: { ...form, language },
+          _hp: hp,
+          idempotencyKey: idempotencyKeyRef.current,
+        },
+      });
+      if (error || !data?.success) {
+        const msg = (data as { error?: string } | null)?.error || error?.message ||
+          "We couldn't submit your application. Please try again.";
+        setSubmitError(msg);
+        toast({ title: "Submission failed", description: msg, variant: "destructive" });
+        return;
+      }
+      setRefId(data.referenceId);
+      setSubmitted(true);
+      toast({ title: t("toastReceivedTitle"), description: `${t("toastReceivedBody")} — ${data.referenceId}` });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Network error. Please try again.";
+      setSubmitError(msg);
+      toast({ title: "Submission failed", description: msg, variant: "destructive" });
+    } finally {
+      setSubmitting(false);
+    }
   };
+
 
   const copyRefId = () => {
     navigator.clipboard.writeText(refId);
@@ -1034,8 +1042,25 @@ export default function SponsorshipApplication() {
           </motion.div>
         </AnimatePresence>
 
+        <input
+          type="text"
+          name="website"
+          tabIndex={-1}
+          autoComplete="off"
+          value={hp}
+          onChange={(e) => setHp(e.target.value)}
+          className="hidden"
+          aria-hidden="true"
+        />
+
+        {submitError && (
+          <div role="alert" className="mt-6 rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+            {submitError}
+          </div>
+        )}
+
         <div className="mt-10 flex items-center justify-between">
-          <Button variant="outline" onClick={back} disabled={step === 0} className="gap-1">
+          <Button variant="outline" onClick={back} disabled={step === 0 || submitting} className="gap-1">
             <ChevronLeft className="h-4 w-4" /> {t("back")}
           </Button>
           {step < steps.length - 1 ? (
@@ -1043,9 +1068,10 @@ export default function SponsorshipApplication() {
               {t("next")} <ChevronRight className="h-4 w-4" />
             </Button>
           ) : (
-            <Button onClick={handleSubmit} className="gap-1">
-              <CheckCircle2 className="h-4 w-4" /> {t("submit")}
+            <Button onClick={handleSubmit} disabled={submitting} className="gap-1">
+              <CheckCircle2 className="h-4 w-4" /> {submitting ? "…" : t("submit")}
             </Button>
+
           )}
         </div>
       </section>

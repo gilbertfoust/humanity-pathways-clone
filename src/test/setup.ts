@@ -13,3 +13,15 @@ Object.defineProperty(window, "matchMedia", {
     dispatchEvent: () => {},
   }),
 });
+
+// jsdom lacks IntersectionObserver — framer-motion viewport features need it.
+class IO {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+  takeRecords() { return []; }
+  root = null;
+  rootMargin = "";
+  thresholds = [];
+}
+(globalThis as unknown as { IntersectionObserver: typeof IO }).IntersectionObserver = IO;
