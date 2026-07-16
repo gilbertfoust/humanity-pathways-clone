@@ -5,33 +5,33 @@ import {
   queueEmailWithLog,
 } from '../_shared/submission-helpers.ts'
 
-const FORM_TYPE = 'sponsorship'
-const DEV_RECIPIENT = 'development@humanitypathwaysglobal.com'
-const TRELLO_RECIPIENT = 'gilbertfoust+dc3ehestj0cnjjib3dw7@boards.trello.com'
+const FORM_TYPE = 'board'
+// Board applications route to the Recruitment/HR staffing inbox and the
+// Recruitment Trello board — the same governance-facing addresses already
+// configured in the project — with a copy to Development as a governance CC.
+const HR_RECIPIENT = 'hr.staffing@humanitypathwaysglobal.com'
+const GOVERNANCE_CC = 'development@humanitypathwaysglobal.com'
+const TRELLO_RECIPIENT = 'gilbertfoust+liliiodopchnjng0z0sf@boards.trello.com'
 
 const schema = z.object({
-  organizationName: z.string().trim().min(1).max(200),
-  contactEmail: z.string().trim().email().max(255),
-  language: z.string().max(10).optional().default('en'),
-  data: z.record(z.any()),
+  fullName: z.string().trim().min(1).max(100),
+  email: z.string().trim().email().max(255),
+  phone: z.string().trim().min(1).max(30),
+  location: z.string().trim().min(1).max(200),
+  linkedIn: z.string().max(500).optional().default(''),
+  currentAffiliation: z.string().max(200).optional().default(''),
+  seatInterest: z.string().trim().min(1).max(100),
+  committeeInterest: z.string().max(500).optional().default(''),
+  timeCommitment: z.string().max(200).optional().default(''),
+  professionalBackground: z.string().trim().min(20).max(5000),
+  boardExperience: z.string().max(5000).optional().default(''),
+  governanceExpertise: z.string().max(5000).optional().default(''),
+  motivation: z.string().trim().min(20).max(5000),
+  conflictsDisclosure: z.string().max(5000).optional().default(''),
+  consent: z.boolean(),
   idempotencyKey: z.string().uuid().optional(),
   _hp: z.string().optional(),
 })
-
-function deepSanitize(v: unknown, depth = 0): unknown {
-  if (depth > 6) return null
-  if (typeof v === 'string') return sanitizeText(v, 10000)
-  if (Array.isArray(v)) return v.slice(0, 100).map((x) => deepSanitize(x, depth + 1))
-  if (v && typeof v === 'object') {
-    const out: Record<string, unknown> = {}
-    for (const [k, val] of Object.entries(v)) {
-      if (Object.keys(out).length >= 200) break
-      out[k.slice(0, 100)] = deepSanitize(val, depth + 1)
-    }
-    return out
-  }
-  return v
-}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders })
@@ -47,7 +47,7 @@ Deno.serve(async (req) => {
 
   if (checkHoneypot(raw)) {
     await logEvent(supabase, { formType: FORM_TYPE, eventType: 'honeypot_blocked', ipHash, userAgent })
-    return json({ success: true, referenceId: makeReferenceId('S') })
+    return json({ success: true, referenceId: makeReferenceId('B') })
   }
 
   const parsed = schema.safeParse(raw)
@@ -58,6 +58,7 @@ Deno.serve(async (req) => {
     })
     return json({ error: 'Please review the form and try again.', fieldErrors: parsed.error.flatten().fieldErrors }, 400)
   }
+  if (!parsed.data.consent) return json({ error: 'Consent is required.' }, 400)
 
   const rl = await rateLimit(supabase, FORM_TYPE, ipHash, 3600, 3)
   if (rl.limited) {
@@ -65,14 +66,18 @@ Deno.serve(async (req) => {
     return json({ error: 'Too many applications from this location. Please try again later.' }, 429)
   }
 
-  const orgName = sanitizeText(parsed.data.organizationName, 200)
-  const email = sanitizeText(parsed.data.contactEmail, 255).toLowerCase()
-  const language = sanitizeText(parsed.data.language, 10) || 'en'
-  const cleanData = deepSanitize(parsed.data.data) as Record<string, unknown>
-  const idempotencyKey = parsed.data.idempotencyKey ?? crypto.randomUUID()
+  const d = parsed.data
+  const clean: Record<string, unknown> = { ...d }
+  for (const k of Object.keys(clean)) {
+    const v = clean[k]
+    if (typeof v === 'string') clean[k] = sanitizeText(v, 5000)
+  }
+  clean.email = String(clean.email).toLowerCase()
+
+  const idempotencyKey = d.idempotencyKey ?? crypto.randomUUID()
 
   const { data: existing } = await supabase
-    .from('sponsorship_applications')
+    .from('board_applications')
     .select('id, reference_id, notification_queued, ack_queued')
     .eq('idempotency_key', idempotencyKey).maybeSingle()
 
@@ -92,17 +97,18 @@ Deno.serve(async (req) => {
       return json({ success: true, referenceId, duplicate: true })
     }
   } else {
-    referenceId = makeReferenceId('S')
+    referenceId = makeReferenceId('B')
     const { data: inserted, error: insertError } = await supabase
-      .from('sponsorship_applications')
+      .from('board_applications')
       .insert({
         reference_id: referenceId, idempotency_key: idempotencyKey,
-        organization_name: orgName, email, language,
-        data: { ...cleanData, organizationName: orgName, contactEmail: email, language },
-        ip_hash: ipHash, user_agent: userAgent,
+        full_name: clean.fullName as string,
+        email: clean.email as string,
+        seat_interest: clean.seatInterest as string,
+        data: clean, ip_hash: ipHash, user_agent: userAgent,
       }).select('id, reference_id').single()
     if (insertError || !inserted) {
-      console.error('sponsorship insert failed', insertError)
+      console.error('board insert failed', insertError)
       await logEvent(supabase, { formType: FORM_TYPE, eventType: 'insert_failed', ipHash, userAgent, details: { error: insertError?.message } })
       return json({ error: 'Could not save your application. Please try again.' }, 500)
     }
@@ -113,50 +119,56 @@ Deno.serve(async (req) => {
     })
   }
 
-  const templateData = {
-    ...cleanData, organizationName: orgName, contactEmail: email, language, referenceId,
-  }
-  const [dev, ack, trello] = await Promise.all([
+  const templateData = { ...clean, referenceId }
+  const [hr, ack, gov, trello] = await Promise.all([
     queueEmailWithLog(supabase, {
       formType: FORM_TYPE, role: 'notification',
-      templateName: 'sponsorship-application', recipientEmail: DEV_RECIPIENT,
-      idempotencyKey: `sponsorship-dev-${submissionId}`,
+      templateName: 'board-application', recipientEmail: HR_RECIPIENT,
+      idempotencyKey: `board-hr-${submissionId}`,
       templateData, referenceId, submissionId, ipHash, userAgent,
     }),
     queueEmailWithLog(supabase, {
       formType: FORM_TYPE, role: 'acknowledgement',
-      templateName: 'sponsorship-acknowledgement', recipientEmail: email,
-      idempotencyKey: `sponsorship-ack-${submissionId}`,
-      templateData: { organizationName: orgName, referenceId },
+      templateName: 'board-acknowledgement', recipientEmail: clean.email as string,
+      idempotencyKey: `board-ack-${submissionId}`,
+      templateData: {
+        fullName: clean.fullName, seatInterest: clean.seatInterest, referenceId,
+      },
       referenceId, submissionId, ipHash, userAgent,
     }),
     queueEmailWithLog(supabase, {
+      formType: FORM_TYPE, role: 'governance-cc',
+      templateName: 'board-application', recipientEmail: GOVERNANCE_CC,
+      idempotencyKey: `board-gov-${submissionId}`,
+      templateData, referenceId, submissionId, ipHash, userAgent,
+    }),
+    queueEmailWithLog(supabase, {
       formType: FORM_TYPE, role: 'trello',
-      templateName: 'sponsorship-application', recipientEmail: TRELLO_RECIPIENT,
-      idempotencyKey: `sponsorship-trello-${submissionId}`,
+      templateName: 'board-application', recipientEmail: TRELLO_RECIPIENT,
+      idempotencyKey: `board-trello-${submissionId}`,
       templateData, referenceId, submissionId, ipHash, userAgent,
     }),
   ])
 
   const patch: Record<string, boolean> = {}
-  if (dev.ok) patch.notification_queued = true
+  if (hr.ok) patch.notification_queued = true
   if (ack.ok) patch.ack_queued = true
   if (Object.keys(patch).length > 0) {
-    await supabase.from('sponsorship_applications').update(patch).eq('id', submissionId)
+    await supabase.from('board_applications').update(patch).eq('id', submissionId)
   }
 
-  if (!dev.ok || !ack.ok) {
+  if (!hr.ok || !ack.ok) {
     return json({
-      error: !dev.ok
-        ? 'Your application was saved but the internal notification could not be queued. Our team will follow up.'
+      error: !hr.ok
+        ? 'Your application was saved but the internal notification could not be queued. Our Nominations Committee will follow up.'
         : 'Your application was saved but the acknowledgement email could not be queued. Please save your reference number.',
       referenceId,
-      queued: { notification: dev.ok, acknowledgement: ack.ok, trello: trello.ok },
+      queued: { notification: hr.ok, acknowledgement: ack.ok, governance: gov.ok, trello: trello.ok },
     }, 502)
   }
 
   return json({
     success: true, referenceId, duplicate: isDuplicate,
-    queued: { notification: true, acknowledgement: true, trello: trello.ok },
+    queued: { notification: true, acknowledgement: true, governance: gov.ok, trello: trello.ok },
   })
 })
