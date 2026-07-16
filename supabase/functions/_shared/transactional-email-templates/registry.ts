@@ -12,9 +12,13 @@ export interface TemplateEntry {
 import { template as volunteerApplication } from './volunteer-application.tsx'
 import { template as sponsorshipApplication } from './sponsorship-application.tsx'
 import { template as onboardingFeeReceipt } from './onboarding-fee-receipt.tsx'
+import { template as contactInquiry } from './contact-inquiry.tsx'
+import { template as newsletterSubscription } from './newsletter-subscription.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'volunteer-application': volunteerApplication,
   'sponsorship-application': sponsorshipApplication,
   'onboarding-fee-receipt': onboardingFeeReceipt,
+  'contact-inquiry': contactInquiry,
+  'newsletter-subscription': newsletterSubscription,
 }
