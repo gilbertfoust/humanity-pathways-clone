@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { HelmetProvider } from "react-helmet-async";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -40,58 +41,64 @@ import Privacy from "./pages/Privacy.tsx";
 import Accessibility from "./pages/Accessibility.tsx";
 import Terms from "./pages/Terms.tsx";
 import DataUse from "./pages/DataUse.tsx";
+import { LegacyRedirect, legacyRedirects } from "./routes/legacyRedirects.tsx";
 
 const queryClient = new QueryClient();
 const routerBasename = import.meta.env.BASE_URL.replace(/\/$/, "") || undefined;
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter basename={routerBasename}>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/hpg-vision" element={<HpgVision />} />
-          <Route path="/hpg-initiatives" element={<HpgInitiatives />} />
-          <Route path="/hpg-staff" element={<HpgStaff />} />
-          <Route path="/hpg-board-of-directors" element={<HpgBoard />} />
-          <Route path="/hpg-sponsorship" element={<HpgSponsorship />} />
-          <Route path="/hpg-blog" element={<HpgBlog />} />
-          <Route path="/global-leaders-summit" element={<GlobalLeadersSummit />} />
-          <Route path="/contact-us" element={<ContactUs />} />
-          <Route path="/volunteer-application" element={<VolunteerApplication />} />
-          <Route path="/sponsorship-application" element={<SponsorshipApplication />} />
-          <Route path="/board-application" element={<BoardApplication />} />
-          <Route path="/gylfh" element={<GYLFH />} />
-          <Route path="/nazarene-mission" element={<NazareneMission />} />
-          <Route path="/megabridge-kenya" element={<MegaBridgeKenya />} />
-          <Route path="/sante-vie-meilleure" element={<SanteVieMeilleure />} />
-          <Route path="/cuba-congo" element={<CUBACongo />} />
-          <Route path="/triumphant-philippines" element={<TriumphantPhilippines />} />
-          <Route path="/project-wings" element={<ProjectWings />} />
-          <Route path="/hope-for-a-good-life" element={<HopeForAGoodLife />} />
-          <Route path="/seishin-plus" element={<SeishinPlus />} />
-          <Route path="/cpbi" element={<CPBI />} />
-          <Route path="/hpg-executive-academy" element={<HpgExecutiveAcademy />} />
-          <Route path="/humble-pathways" element={<HumblePathways />} />
-          <Route path="/mkcf-sierra-leone" element={<MKCFSierraLeone />} />
-          <Route path="/youth-stem-robotics" element={<YouthSTEMRobotics />} />
-          <Route path="/rainroot-wata" element={<RainrootWATA />} />
-          <Route path="/humane-initiative" element={<HumaneInitiative />} />
-          <Route path="/hpg-onboarding-fee" element={<HpgOnboardingFee />} />
-          <Route path="/hpg-onboarding-fee/thank-you" element={<OnboardingThankYou />} />
-          <Route path="/unsubscribe" element={<Unsubscribe />} />
-          <Route path="/annual-reports" element={<AnnualReports />} />
-          <Route path="/privacy" element={<Privacy />} />
-          <Route path="/accessibility" element={<Accessibility />} />
-          <Route path="/terms" element={<Terms />} />
-          <Route path="/data-use" element={<DataUse />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <HelmetProvider>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter basename={routerBasename}>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/hpg-vision" element={<HpgVision />} />
+            <Route path="/hpg-initiatives" element={<HpgInitiatives />} />
+            <Route path="/hpg-staff" element={<HpgStaff />} />
+            <Route path="/hpg-board-of-directors" element={<HpgBoard />} />
+            <Route path="/hpg-sponsorship" element={<HpgSponsorship />} />
+            <Route path="/hpg-blog" element={<HpgBlog />} />
+            <Route path="/global-leaders-summit" element={<GlobalLeadersSummit />} />
+            <Route path="/contact-us" element={<ContactUs />} />
+            <Route path="/volunteer-application" element={<VolunteerApplication />} />
+            <Route path="/sponsorship-application" element={<SponsorshipApplication />} />
+            <Route path="/board-application" element={<BoardApplication />} />
+            <Route path="/gylfh" element={<GYLFH />} />
+            <Route path="/nazarene-mission" element={<NazareneMission />} />
+            <Route path="/megabridge-kenya" element={<MegaBridgeKenya />} />
+            <Route path="/sante-vie-meilleure" element={<SanteVieMeilleure />} />
+            <Route path="/cuba-congo" element={<CUBACongo />} />
+            <Route path="/triumphant-philippines" element={<TriumphantPhilippines />} />
+            <Route path="/project-wings" element={<ProjectWings />} />
+            <Route path="/hope-for-a-good-life" element={<HopeForAGoodLife />} />
+            <Route path="/seishin-plus" element={<SeishinPlus />} />
+            <Route path="/cpbi" element={<CPBI />} />
+            <Route path="/hpg-executive-academy" element={<HpgExecutiveAcademy />} />
+            <Route path="/humble-pathways" element={<HumblePathways />} />
+            <Route path="/mkcf-sierra-leone" element={<MKCFSierraLeone />} />
+            <Route path="/youth-stem-robotics" element={<YouthSTEMRobotics />} />
+            <Route path="/rainroot-wata" element={<RainrootWATA />} />
+            <Route path="/humane-initiative" element={<HumaneInitiative />} />
+            <Route path="/hpg-onboarding-fee" element={<HpgOnboardingFee />} />
+            <Route path="/hpg-onboarding-fee/thank-you" element={<OnboardingThankYou />} />
+            <Route path="/unsubscribe" element={<Unsubscribe />} />
+            <Route path="/annual-reports" element={<AnnualReports />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/accessibility" element={<Accessibility />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/data-use" element={<DataUse />} />
+            {Object.entries(legacyRedirects).map(([from, to]) => (
+              <Route key={from} path={from} element={<LegacyRedirect to={to} />} />
+            ))}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </HelmetProvider>
 );
 
 export default App;
