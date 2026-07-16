@@ -616,19 +616,26 @@ export default function VolunteerApplication() {
             Thank You!
           </h2>
           <p className="mt-4 text-muted-foreground">
-            Your submission has been recorded successfully. A receipt email
-            should arrive shortly at <strong>{form.email}</strong>.
+            Your application has been recorded and our team has been notified.
           </p>
+          {refId && (
+            <p className="mt-4 text-sm text-muted-foreground">
+              Reference: <span className="font-mono font-medium text-foreground">{refId}</span>
+            </p>
+          )}
           <Button
             className="mt-8"
             onClick={() => {
               setForm(emptyForm);
               setStep(0);
               setSubmitted(false);
+              setRefId("");
+              idempotencyKeyRef.current = crypto.randomUUID();
             }}
           >
             Start New Application
           </Button>
+
         </section>
         <Footer />
       </div>
