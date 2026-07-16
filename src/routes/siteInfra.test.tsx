@@ -39,6 +39,11 @@ describe("Staff Workspace navbar control", () => {
 });
 
 describe("Per-route SEO metadata", () => {
+  beforeEach(() => {
+    cleanup();
+    document.head.querySelectorAll("title, meta, link[rel='canonical']").forEach((n) => n.remove());
+  });
+
   it("sets title, canonical, and og:url from the route registry", async () => {
     const { unmount } = renderWith("/hpg-vision", <div>vision</div>);
     await waitFor(() => expect(document.title).toMatch(/HPG Vision/));
