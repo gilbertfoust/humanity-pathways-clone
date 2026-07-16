@@ -117,7 +117,13 @@ export default function VolunteerApplication() {
   const [form, setForm] = useState<FormData>(emptyForm);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
+  const [refId, setRefId] = useState<string>("");
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [hp, setHp] = useState("");
+  const idempotencyKeyRef = useRef<string>(crypto.randomUUID());
   const { toast } = useToast();
+
 
   const progress = ((step + 1) / STEPS.length) * 100;
 
