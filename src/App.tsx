@@ -42,6 +42,7 @@ import Accessibility from "./pages/Accessibility.tsx";
 import Terms from "./pages/Terms.tsx";
 import DataUse from "./pages/DataUse.tsx";
 import { LegacyRedirect, legacyRedirects } from "./routes/legacyRedirects.tsx";
+import Seo from "./components/Seo.tsx";
 
 const queryClient = new QueryClient();
 const routerBasename = import.meta.env.BASE_URL.replace(/\/$/, "") || undefined;
