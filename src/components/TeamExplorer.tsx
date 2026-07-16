@@ -301,7 +301,7 @@ function TeamGlobe({
           if (!src || typeof clusterId !== "number") return;
           src.getClusterExpansionZoom(clusterId, (err, zoom) => {
             if (err) return;
-            const geom = features[0].geometry as { coordinates: [number, number] };
+            const geom = features[0].geometry as unknown as { coordinates: [number, number] };
             map.easeTo({
               center: geom.coordinates as LngLatLike,
               zoom,
