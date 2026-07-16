@@ -54,6 +54,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter basename={routerBasename}>
+          <Seo />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/hpg-vision" element={<HpgVision />} />
