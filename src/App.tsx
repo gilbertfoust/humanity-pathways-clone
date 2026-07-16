@@ -35,6 +35,11 @@ import HumaneInitiative from "./pages/initiatives/HumaneInitiative.tsx";
 import HpgOnboardingFee from "./pages/HpgOnboardingFee.tsx";
 import OnboardingThankYou from "./pages/OnboardingThankYou.tsx";
 import Unsubscribe from "./pages/Unsubscribe.tsx";
+import AnnualReports from "./pages/AnnualReports.tsx";
+import Privacy from "./pages/Privacy.tsx";
+import Accessibility from "./pages/Accessibility.tsx";
+import Terms from "./pages/Terms.tsx";
+import DataUse from "./pages/DataUse.tsx";
 
 const queryClient = new QueryClient();
 const routerBasename = import.meta.env.BASE_URL.replace(/\/$/, "") || undefined;
