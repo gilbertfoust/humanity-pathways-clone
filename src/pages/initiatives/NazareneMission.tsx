@@ -71,8 +71,8 @@ export default function NazareneMission() {
           <h2 className="mt-16 font-display text-2xl font-bold text-foreground text-center">Get Involved</h2>
           <div className="mt-8 grid gap-6 md:grid-cols-3">
             {[
-              { title: "Volunteer", desc: "Offer tutoring, mentorship, or help with youth leadership workshops.", cta: "I can help", href: "mailto:info@humanitypathwaysglobal.org?subject=Volunteer%20-%20Youth%20Development%20Angola" },
-              { title: "Partner", desc: "Are you a school, youth center, or community group in Luanda/Viana? Let's collaborate.", cta: "Start a conversation", href: "mailto:info@humanitypathwaysglobal.org?subject=Partner%20-%20Youth%20Development%20Angola" },
+              { title: "Volunteer", desc: "Offer tutoring, mentorship, or help with youth leadership workshops.", cta: "I can help", href: "mailto:info@humanitypathwaysglobal.com?subject=Volunteer%20-%20Youth%20Development%20Angola" },
+              { title: "Partner", desc: "Are you a school, youth center, or community group in Luanda/Viana? Let's collaborate.", cta: "Start a conversation", href: "mailto:info@humanitypathwaysglobal.com?subject=Partner%20-%20Youth%20Development%20Angola" },
               { title: "Donate", desc: "Fund school materials, leadership training, and youth advocacy programs.", cta: "Give / Contact", href: "/contact-us" },
             ].map((item) => (
               <Card key={item.title}>
@@ -89,7 +89,7 @@ export default function NazareneMission() {
 
           {/* Contact */}
           <div className="mt-12 text-center text-sm text-muted-foreground">
-            <p><Mail className="inline h-4 w-4 mr-1" /> <a href="mailto:info@humanitypathwaysglobal.org" className="text-primary hover:underline">info@humanitypathwaysglobal.org</a></p>
+            <p><Mail className="inline h-4 w-4 mr-1" /> <a href="mailto:info@humanitypathwaysglobal.com" className="text-primary hover:underline">info@humanitypathwaysglobal.com</a></p>
           </div>
         </div>
       </section>
