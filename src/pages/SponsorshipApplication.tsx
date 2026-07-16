@@ -1042,8 +1042,25 @@ export default function SponsorshipApplication() {
           </motion.div>
         </AnimatePresence>
 
+        <input
+          type="text"
+          name="website"
+          tabIndex={-1}
+          autoComplete="off"
+          value={hp}
+          onChange={(e) => setHp(e.target.value)}
+          className="hidden"
+          aria-hidden="true"
+        />
+
+        {submitError && (
+          <div role="alert" className="mt-6 rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+            {submitError}
+          </div>
+        )}
+
         <div className="mt-10 flex items-center justify-between">
-          <Button variant="outline" onClick={back} disabled={step === 0} className="gap-1">
+          <Button variant="outline" onClick={back} disabled={step === 0 || submitting} className="gap-1">
             <ChevronLeft className="h-4 w-4" /> {t("back")}
           </Button>
           {step < steps.length - 1 ? (
@@ -1051,9 +1068,10 @@ export default function SponsorshipApplication() {
               {t("next")} <ChevronRight className="h-4 w-4" />
             </Button>
           ) : (
-            <Button onClick={handleSubmit} className="gap-1">
-              <CheckCircle2 className="h-4 w-4" /> {t("submit")}
+            <Button onClick={handleSubmit} disabled={submitting} className="gap-1">
+              <CheckCircle2 className="h-4 w-4" /> {submitting ? "…" : t("submit")}
             </Button>
+
           )}
         </div>
       </section>
