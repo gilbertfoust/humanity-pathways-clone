@@ -79,10 +79,12 @@ export default function Navbar() {
             href="https://gilbertfoust.github.io/hpg-workspace/"
             target="_blank"
             rel="noopener noreferrer"
-            className="ml-2 p-2 text-primary-foreground/80 hover:text-primary-foreground"
-            aria-label="HPG Workspace"
+            className="ml-2 inline-flex items-center gap-1.5 rounded-sm border border-primary-foreground/30 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-primary-foreground/90 transition-colors hover:border-primary-foreground/70 hover:text-primary-foreground"
+            aria-label="Staff Workspace (opens in a new tab)"
+            data-testid="staff-workspace-link"
           >
-            <User className="h-4 w-4" />
+            <User className="h-4 w-4" aria-hidden="true" />
+            <span>Staff Workspace</span>
           </a>
         </div>
 
