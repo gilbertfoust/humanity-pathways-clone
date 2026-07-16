@@ -615,36 +615,39 @@ export default function SponsorshipApplication() {
   const back = () => setStep((s) => Math.max(s - 1, 0));
 
   const handleSubmit = async () => {
-    const id = `HPG-S-${Date.now().toString(36).toUpperCase()}`;
-    const submissions = JSON.parse(
-      localStorage.getItem("hpg_sponsorship_apps") || "[]"
-    );
-    submissions.push({ ...form, id, language, submittedAt: new Date().toISOString() });
-    localStorage.setItem("hpg_sponsorship_apps", JSON.stringify(submissions));
-
-    const templateData = { ...form, language };
-    supabase.functions.invoke("send-transactional-email", {
-      body: {
-        templateName: "sponsorship-application",
-        recipientEmail: "development@humanitypathwaysglobal.com",
-        idempotencyKey: `sponsorship-dev-${id}`,
-        templateData,
-      },
-    });
-
-    supabase.functions.invoke("send-transactional-email", {
-      body: {
-        templateName: "sponsorship-application",
-        recipientEmail: "gilbertfoust+dc3ehestj0cnjjib3dw7@boards.trello.com",
-        idempotencyKey: `sponsorship-trello-${id}`,
-        templateData,
-      },
-    });
-
-    setRefId(id);
-    setSubmitted(true);
-    toast({ title: t("toastReceivedTitle"), description: t("toastReceivedBody") });
+    if (!validateStep()) return;
+    setSubmitError(null);
+    setSubmitting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("submit-sponsorship", {
+        body: {
+          organizationName: form.orgName,
+          contactEmail: form.email,
+          language,
+          data: { ...form, language },
+          _hp: hp,
+          idempotencyKey: idempotencyKeyRef.current,
+        },
+      });
+      if (error || !data?.success) {
+        const msg = (data as { error?: string } | null)?.error || error?.message ||
+          "We couldn't submit your application. Please try again.";
+        setSubmitError(msg);
+        toast({ title: "Submission failed", description: msg, variant: "destructive" });
+        return;
+      }
+      setRefId(data.referenceId);
+      setSubmitted(true);
+      toast({ title: t("toastReceivedTitle"), description: `${t("toastReceivedBody")} — ${data.referenceId}` });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Network error. Please try again.";
+      setSubmitError(msg);
+      toast({ title: "Submission failed", description: msg, variant: "destructive" });
+    } finally {
+      setSubmitting(false);
+    }
   };
+
 
   const copyRefId = () => {
     navigator.clipboard.writeText(refId);
