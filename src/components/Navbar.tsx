@@ -122,6 +122,17 @@ export default function Navbar() {
               ))}
             </div>
           ))}
+          <a
+            href="https://gilbertfoust.github.io/hpg-workspace/"
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => setMobileOpen(false)}
+            className="flex items-center gap-2 border-b border-primary-foreground/10 px-6 py-3 text-sm font-bold uppercase tracking-wider text-primary-foreground/80"
+            aria-label="Staff Workspace (opens in a new tab)"
+          >
+            <User className="h-4 w-4" aria-hidden="true" />
+            Staff Workspace
+          </a>
         </div>
       )}
     </nav>
