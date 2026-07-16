@@ -35,10 +35,11 @@ export default function Terms() {
           <h2 className="font-display">Third-party services</h2>
           <p>
             Some features of this site rely on third parties, including Mapbox for map
-            tiles, Tumblr for the public blog feed, Instagram for the public social
-            feed, Stripe for onboarding-fee payments, and external donation platforms
-            (Zeffy, Every.org, and the Rwanda donation portal). Your use of those
-            services is governed by their own terms.
+            tiles, Tumblr for the public blog feed, Stripe for onboarding-fee payments,
+            and external donation platforms (Zeffy, Every.org, and the Rwanda donation
+            portal). This site also links out to our Instagram profile, but does not
+            embed Instagram posts. Your use of those services is governed by their own
+            terms.
           </p>
 
           <h2 className="font-display">Content and trademarks</h2>
