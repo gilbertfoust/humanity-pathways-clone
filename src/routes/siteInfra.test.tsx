@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { readFileSync } from "node:fs";
@@ -39,39 +39,42 @@ describe("Staff Workspace navbar control", () => {
 });
 
 describe("Per-route SEO metadata", () => {
-  const flush = () =>
-    new Promise<void>((r) => setTimeout(r, 0));
-
   it("sets title, canonical, and og:url from the route registry", async () => {
     const { unmount } = renderWith("/hpg-vision", <div>vision</div>);
-    await flush();
-    expect(document.title).toMatch(/HPG Vision/);
-    const canonical = document.querySelector('link[rel="canonical"]');
-    expect(canonical?.getAttribute("href")).toBe(`${SITE_URL}/hpg-vision`);
-    const ogUrl = document.querySelector('meta[property="og:url"]');
-    expect(ogUrl?.getAttribute("content")).toBe(`${SITE_URL}/hpg-vision`);
+    await waitFor(() => expect(document.title).toMatch(/HPG Vision/));
+    await waitFor(() =>
+      expect(
+        document.querySelector('link[rel="canonical"]')?.getAttribute("href")
+      ).toBe(`${SITE_URL}/hpg-vision`)
+    );
+    expect(
+      document.querySelector('meta[property="og:url"]')?.getAttribute("content")
+    ).toBe(`${SITE_URL}/hpg-vision`);
     unmount();
   });
 
   it("changes metadata when the route changes", async () => {
     const { unmount } = renderWith("/contact-us", <div>contact</div>);
-    await flush();
-    expect(document.title).toMatch(/Contact Us/);
-    const desc = document.querySelector('meta[name="description"]');
-    expect(desc?.getAttribute("content")).toMatch(/contact/i);
+    await waitFor(() => expect(document.title).toMatch(/Contact Us/));
+    expect(
+      document.querySelector('meta[name="description"]')?.getAttribute("content")
+    ).toMatch(/contact/i);
     unmount();
 
     renderWith("/annual-reports", <div>reports</div>);
-    await flush();
-    expect(document.title).toMatch(/Annual Reports/);
-    const canonical = document.querySelector('link[rel="canonical"]');
-    expect(canonical?.getAttribute("href")).toBe(`${SITE_URL}/annual-reports`);
+    await waitFor(() => expect(document.title).toMatch(/Annual Reports/));
+    expect(
+      document.querySelector('link[rel="canonical"]')?.getAttribute("href")
+    ).toBe(`${SITE_URL}/annual-reports`);
   });
 
   it("emits noindex for onboarding-fee and unsubscribe routes", async () => {
     const { unmount } = renderWith("/unsubscribe", <div>u</div>);
-    await flush();
-    expect(document.querySelector('meta[name="robots"]')?.getAttribute("content")).toMatch(/noindex/);
+    await waitFor(() =>
+      expect(
+        document.querySelector('meta[name="robots"]')?.getAttribute("content")
+      ).toMatch(/noindex/)
+    );
     unmount();
   });
 });
