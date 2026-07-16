@@ -179,47 +179,35 @@ export default function VolunteerApplication() {
   const back = () => setStep((s) => Math.max(s - 1, 0));
 
   const handleSubmit = async () => {
-    // Save to localStorage as backup
-    const submissions = JSON.parse(
-      localStorage.getItem("hpg_volunteer_apps") || "[]"
-    );
-    const id = crypto.randomUUID();
-    const entry = {
-      ...form,
-      id,
-      submittedAt: new Date().toISOString(),
-    };
-    submissions.push(entry);
-    localStorage.setItem("hpg_volunteer_apps", JSON.stringify(submissions));
-
-    // Send email to HR
-    const templateData = { ...form };
-    supabase.functions.invoke("send-transactional-email", {
-      body: {
-        templateName: "volunteer-application",
-        recipientEmail: "hr.staffing@humanitypathwaysglobal.com",
-        idempotencyKey: `volunteer-hr-${id}`,
-        templateData,
-      },
-    });
-
-    // Send email to Trello Recruitment board
-    supabase.functions.invoke("send-transactional-email", {
-      body: {
-        templateName: "volunteer-application",
-        recipientEmail: "gilbertfoust+liliiodopchnjng0z0sf@boards.trello.com",
-        idempotencyKey: `volunteer-trello-${id}`,
-        templateData,
-      },
-    });
-
-    setSubmitted(true);
-    toast({
-      title: "Application received!",
-      description:
-        "Your submission has been recorded. A receipt email should arrive shortly.",
-    });
+    if (!validateStep()) return;
+    setSubmitError(null);
+    setSubmitting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("submit-volunteer", {
+        body: { ...form, _hp: hp, idempotencyKey: idempotencyKeyRef.current },
+      });
+      if (error || !data?.success) {
+        const msg = (data as { error?: string } | null)?.error || error?.message ||
+          "We couldn't submit your application. Please try again.";
+        setSubmitError(msg);
+        toast({ title: "Submission failed", description: msg, variant: "destructive" });
+        return;
+      }
+      setRefId(data.referenceId);
+      setSubmitted(true);
+      toast({
+        title: "Application received!",
+        description: `Reference: ${data.referenceId}`,
+      });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Network error. Please try again.";
+      setSubmitError(msg);
+      toast({ title: "Submission failed", description: msg, variant: "destructive" });
+    } finally {
+      setSubmitting(false);
+    }
   };
+
 
   /* ── field helper ────────────────────────── */
 
