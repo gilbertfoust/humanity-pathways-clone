@@ -82,6 +82,11 @@ const App = () => (
           <Route path="/hpg-onboarding-fee" element={<HpgOnboardingFee />} />
           <Route path="/hpg-onboarding-fee/thank-you" element={<OnboardingThankYou />} />
           <Route path="/unsubscribe" element={<Unsubscribe />} />
+          <Route path="/annual-reports" element={<AnnualReports />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/accessibility" element={<Accessibility />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/data-use" element={<DataUse />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
