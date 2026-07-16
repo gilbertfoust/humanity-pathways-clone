@@ -14,6 +14,7 @@ const navLinks = [
     children: [
       { label: "HPG Staff", href: "/hpg-staff" },
       { label: "HPG Board of Directors", href: "/hpg-board-of-directors" },
+      { label: "Board Application", href: "/board-application" },
       { label: "Volunteer Application", href: "/volunteer-application" },
     ],
   },

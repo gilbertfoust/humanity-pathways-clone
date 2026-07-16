@@ -14,6 +14,7 @@ import GlobalLeadersSummit from "./pages/GlobalLeadersSummit.tsx";
 import ContactUs from "./pages/ContactUs.tsx";
 import VolunteerApplication from "./pages/VolunteerApplication.tsx";
 import SponsorshipApplication from "./pages/SponsorshipApplication.tsx";
+import BoardApplication from "./pages/BoardApplication.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import GYLFH from "./pages/initiatives/GYLFH.tsx";
 import NazareneMission from "./pages/initiatives/NazareneMission.tsx";
@@ -56,6 +57,7 @@ const App = () => (
           <Route path="/contact-us" element={<ContactUs />} />
           <Route path="/volunteer-application" element={<VolunteerApplication />} />
           <Route path="/sponsorship-application" element={<SponsorshipApplication />} />
+          <Route path="/board-application" element={<BoardApplication />} />
           <Route path="/gylfh" element={<GYLFH />} />
           <Route path="/nazarene-mission" element={<NazareneMission />} />
           <Route path="/megabridge-kenya" element={<MegaBridgeKenya />} />
