@@ -81,7 +81,25 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 border-t border-primary-foreground/10 pt-8 text-center">
+        <nav
+          aria-label="Legal and policy"
+          className="mt-12 border-t border-primary-foreground/10 pt-8"
+        >
+          <ul className="flex flex-wrap justify-center gap-x-6 gap-y-2">
+            {legalLinks.map((link) => (
+              <li key={link.label}>
+                <Link
+                  to={link.href}
+                  className="text-xs text-primary-foreground/60 transition-colors hover:text-primary-foreground"
+                >
+                  {link.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        <div className="mt-8 border-t border-primary-foreground/10 pt-8 text-center">
           <p className="text-xs text-primary-foreground/50">
             Copyright © {new Date().getFullYear()} Humanity Pathways Global - All Rights Reserved.
           </p>
