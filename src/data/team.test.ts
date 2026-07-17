@@ -1,4 +1,6 @@
 import { describe, it, expect } from "vitest";
+import { existsSync, readFileSync, statSync } from "node:fs";
+import path from "node:path";
 import {
   TEAM,
   CABINET,
@@ -11,6 +13,7 @@ import {
   getMemberById,
   slugify,
 } from "@/data/team";
+
 
 describe("team data module", () => {
   it("has no duplicate ids", () => {
