@@ -24,6 +24,18 @@ export interface AnnualReport {
 
 export const annualReports: AnnualReport[] = [
   {
+    year: 2025,
+    title: "2025 Preliminary Annual Financial Report",
+    href: "/reports/HPG_2025_Preliminary_Annual_Financial_Report.pdf",
+    period: "January 1 – December 31, 2025",
+    status: "Preliminary • Unaudited",
+    scopeSummary:
+      "Complete connected Relay operating checking history (account ending 7674) plus approved accrual and noncash entries and approved support for Humble Pathways, Project Wings Soaring, and Global Youth Leaders for Humanity. Bank reconciliation is reconciled and trial balance passes; documentation and governance approvals remain open.",
+    preliminary: true,
+    unaudited: true,
+    meta: "PDF • Management-prepared",
+  },
+  {
     year: 2024,
     title: "2024 Preliminary Annual Financial Report",
     href: "/reports/HPG_2024_Preliminary_Annual_Financial_Report.pdf",
