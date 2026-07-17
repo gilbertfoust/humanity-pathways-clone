@@ -261,10 +261,19 @@ def kv_table(rows: list[tuple[str, str]]) -> Table:
 
 def money_table(header: list[str], rows: list[list], total_row: list | None = None,
                 col_widths=None) -> Table:
+    ncols = len(header)
+    if col_widths is None:
+        avail = PAGE_W - 2 * MARGIN
+        if ncols == 3:
+            col_widths = [avail - 3.0 * inch, 1.6 * inch, 1.4 * inch]
+        elif ncols == 2:
+            col_widths = [avail - 1.8 * inch, 1.8 * inch]
+        else:
+            col_widths = [avail / ncols] * ncols
     data = [header] + rows
     if total_row is not None:
         data.append(total_row)
-    t = Table(data, colWidths=col_widths or [3.5 * inch, 1.4 * inch, 1.35 * inch])
+    t = Table(data, colWidths=col_widths)
     style = [
         ("BACKGROUND", (0, 0), (-1, 0), PRIMARY),
         ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
@@ -293,7 +302,7 @@ def money_table(header: list[str], rows: list[list], total_row: list | None = No
 
 
 def make_pie() -> Drawing:
-    d = Drawing(5.2 * inch, 2.6 * inch)
+    d = Drawing(5.6 * inch, 2.6 * inch)
     d.add(String(0, 2.4 * inch, "Functional Expense Allocation (%)",
                  fontName="Helvetica-Bold", fontSize=11, fillColor=PRIMARY))
     pie = Pie()
