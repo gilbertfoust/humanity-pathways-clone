@@ -65,4 +65,76 @@ describe("team data module", () => {
     }
     expect(getMemberById("does-not-exist")).toBeUndefined();
   });
+
+  // ── Original-photo migration guarantees ────────────────
+  const REQUIRED_STAFF = [
+    "Kweku Quaye",
+    "Liz Roman",
+    "William White",
+    "Refa Bethanic Gea Ananda",
+    "Nischal Timalsina",
+    "Ruchitha Chowdary",
+    "Twinkle Reddy Alukapally",
+    "Nyon Oozi Jackline",
+    "David Nguyen",
+    "Maria Ramos",
+    "Gregorio Santi",
+    "Jane DeRosa",
+    "Shaneka Maxwell",
+    "Christie Nelson",
+    "Nydia Meijas",
+    "Ezekiel Etuk",
+    "Josue Rios",
+  ];
+
+  it("includes every required staff/director exactly once by normalized name", () => {
+    for (const name of REQUIRED_STAFF) {
+      const slug = slugify(name);
+      const matches = TEAM.filter((m) => m.id === slug);
+      expect(matches, `expected exactly one member for ${name}`).toHaveLength(1);
+    }
+  });
+
+  it("has no duplicate normalized names or slugs across the whole roster", () => {
+    const slugs = TEAM.map((m) => slugify(m.name));
+    expect(new Set(slugs).size).toBe(slugs.length);
+  });
+
+  it("references only local /images/original-hpg/ portraits (no hotlinks)", () => {
+    for (const m of TEAM) {
+      if (!m.photo) continue;
+      expect(m.photo).toMatch(/^\/images\/original-hpg\//);
+      expect(m.photo).not.toMatch(/wsimg\.com|humanitypathwaysglobal\.com/);
+    }
+  });
+
+  it("has an existing, non-empty local file for every referenced portrait", () => {
+    for (const m of TEAM) {
+      if (!m.photo) continue;
+      const filePath = path.join(process.cwd(), "public", m.photo);
+      expect(existsSync(filePath), `missing portrait file for ${m.name}: ${m.photo}`).toBe(true);
+      expect(statSync(filePath).size).toBeGreaterThan(1024);
+    }
+  });
+
+  it("shares the same TEAM roster across Staff/Board/Cabinet derivations", () => {
+    for (const m of STAFF) expect(TEAM).toContain(m);
+    for (const m of BOARD) expect(TEAM).toContain(m);
+    for (const m of CABINET) expect(TEAM).toContain(m);
+    // Staff and Board are disjoint by kind
+    const staffIds = new Set(STAFF.map((m) => m.id));
+    for (const b of BOARD) expect(staffIds.has(b.id)).toBe(false);
+  });
+
+  it("keeps team.ts free of any rendered wsimg/humanitypathwaysglobal image URL", () => {
+    const src = readFileSync(path.join(process.cwd(), "src/data/team.ts"), "utf8");
+    // Strip comment lines before checking
+    const code = src
+      .split("\n")
+      .filter((l) => !l.trim().startsWith("//"))
+      .join("\n");
+    expect(code).not.toMatch(/https?:\/\/img\d?\.wsimg\.com/);
+    expect(code).not.toMatch(/https?:\/\/(?:www\.)?humanitypathwaysglobal\.com\/[^"'\s]*\.(?:jpg|jpeg|png|webp|gif)/i);
+  });
 });
+
