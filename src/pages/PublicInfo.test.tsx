@@ -74,14 +74,11 @@ describe("Annual Reports listing", () => {
     }
   });
 
-  it("displays the preliminary and unaudited notice when flagged", () => {
+  it("displays a preliminary/unaudited notice for each flagged report", () => {
     renderAt("/annual-reports", <AnnualReports />);
-    const flagged = annualReports.some((r) => r.preliminary || r.unaudited);
-    if (flagged) {
-      expect(
-        screen.getByRole("note", { name: /preliminary and unaudited notice/i })
-      ).toBeInTheDocument();
-    }
+    const flaggedCount = annualReports.filter((r) => r.preliminary || r.unaudited).length;
+    const notes = screen.queryAllByRole("note", { name: /preliminary and unaudited notice/i });
+    expect(notes.length).toBe(flaggedCount);
   });
 
   it("includes both the 2024 and 2025 entries with stable hrefs", () => {
