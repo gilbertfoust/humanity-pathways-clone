@@ -50,7 +50,7 @@ export const routeMeta: RouteMeta[] = [
   { path: "/hpg-onboarding-fee", title: `HPG Onboarding Fee | ${SITE_NAME}`, description: "Secure onboarding-fee checkout for new HPG program participants and partners.", noindex: true, noSitemap: true },
   { path: "/hpg-onboarding-fee/thank-you", title: `Thank You | ${SITE_NAME}`, description: "Onboarding-fee payment confirmation.", noindex: true, noSitemap: true },
   { path: "/unsubscribe", title: `Unsubscribe | ${SITE_NAME}`, description: "Manage or cancel your HPG email subscription.", noindex: true, noSitemap: true },
-  { path: "/annual-reports", title: `Annual Reports | ${SITE_NAME}`, description: "Public listing of Humanity Pathways Global annual reports." },
+  { path: "/annual-reports", title: `Reports & Impact | ${SITE_NAME}`, description: "Humanity Pathways Global's impact reports and annual financial reports, housed together for public transparency." },
   { path: "/privacy", title: `Privacy | ${SITE_NAME}`, description: "How HPG's website handles information submitted through its public forms." },
   { path: "/accessibility", title: `Accessibility | ${SITE_NAME}`, description: "HPG's approach to keeping this website usable for everyone." },
   { path: "/terms", title: `Terms of Use | ${SITE_NAME}`, description: "Terms that apply to your use of the Humanity Pathways Global website." },

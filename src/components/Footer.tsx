@@ -10,7 +10,7 @@ const footerLinks = [
 ];
 
 const legalLinks = [
-  { label: "Annual Reports", href: "/annual-reports" },
+  { label: "Reports & Impact", href: "/annual-reports" },
   { label: "Privacy", href: "/privacy" },
   { label: "Data Use", href: "/data-use" },
   { label: "Accessibility", href: "/accessibility" },

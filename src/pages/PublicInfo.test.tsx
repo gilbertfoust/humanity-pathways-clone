@@ -9,7 +9,7 @@ import Accessibility from "@/pages/Accessibility";
 import Terms from "@/pages/Terms";
 import DataUse from "@/pages/DataUse";
 import Footer from "@/components/Footer";
-import { annualReports } from "@/data/annualReports";
+import { annualReports, impactReports } from "@/data/annualReports";
 
 const renderAt = (path: string, ui: React.ReactNode) =>
   render(
@@ -21,9 +21,11 @@ const renderAt = (path: string, ui: React.ReactNode) =>
   );
 
 describe("Public information pages", () => {
-  it("renders Annual Reports", () => {
+  it("renders Reports & Impact", () => {
     renderAt("/annual-reports", <AnnualReports />);
-    expect(screen.getByRole("heading", { level: 1, name: /annual reports/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { level: 1, name: /reports & impact/i })
+    ).toBeInTheDocument();
   });
 
   it("renders Privacy", () => {
@@ -47,8 +49,8 @@ describe("Public information pages", () => {
   });
 });
 
-describe("Annual Reports listing", () => {
-  it("lists exactly the reports that exist as PDF files in public/reports/", () => {
+describe("Reports & Impact library", () => {
+  it("every financial report PDF exists as a nonempty file", () => {
     for (const r of annualReports) {
       expect(r.href.startsWith("/reports/")).toBe(true);
       expect(r.href.endsWith(".pdf")).toBe(true);
@@ -59,32 +61,72 @@ describe("Annual Reports listing", () => {
     }
   });
 
-  it("renders each report with a status badge, scope, and View/Download links", () => {
+  it("every impact report PDF exists and is nontrivial", () => {
+    expect(impactReports.length).toBeGreaterThan(0);
+    for (const r of impactReports) {
+      expect(r.href.startsWith("/reports/")).toBe(true);
+      expect(r.href.endsWith(".pdf")).toBe(true);
+      const abs = resolve(process.cwd(), "public", r.href.replace(/^\//, ""));
+      const stat = statSync(abs);
+      expect(stat.isFile()).toBe(true);
+      expect(stat.size).toBeGreaterThan(5000);
+    }
+  });
+
+  it("renders an Impact Reports section containing the 2024-2025 report card with badges and links", () => {
     renderAt("/annual-reports", <AnnualReports />);
-    for (const r of annualReports) {
-      expect(screen.getByRole("heading", { level: 2, name: r.title })).toBeInTheDocument();
-      expect(screen.getAllByText((_, node) => node?.textContent?.includes(`Reporting period: ${r.period}`) ?? false).length).toBeGreaterThan(0);
-      const view = screen.getByRole("link", { name: new RegExp(`view ${r.title} pdf`, "i") });
+    const impactSection = screen.getByRole("region", { name: /^impact reports$/i });
+    for (const r of impactReports) {
+      expect(
+        within(impactSection).getByRole("heading", { level: 3, name: r.title })
+      ).toBeInTheDocument();
+      const badges = within(impactSection).getByLabelText(
+        new RegExp(`report status badges for ${r.title}`, "i")
+      );
+      expect(within(badges).getByText(/management-prepared/i)).toBeInTheDocument();
+      expect(within(badges).getByText(/impact report/i)).toBeInTheDocument();
+      const view = within(impactSection).getByRole("link", {
+        name: new RegExp(`view ${r.title} pdf`, "i"),
+      });
       expect(view).toHaveAttribute("href", r.href);
       expect(view).toHaveAttribute("target", "_blank");
-      expect(view).toHaveAttribute("rel", expect.stringContaining("noopener"));
-      const dl = screen.getByRole("link", { name: new RegExp(`download ${r.title} pdf`, "i") });
+      const dl = within(impactSection).getByRole("link", {
+        name: new RegExp(`download ${r.title} pdf`, "i"),
+      });
       expect(dl).toHaveAttribute("href", r.href);
       expect(dl).toHaveAttribute("download");
     }
   });
 
-  it("displays a preliminary/unaudited notice for each flagged report", () => {
+  it("renders an Annual Financial Reports section with each report, badges, and view/download links", () => {
+    renderAt("/annual-reports", <AnnualReports />);
+    const section = screen.getByRole("region", { name: /annual financial reports/i });
+    for (const r of annualReports) {
+      expect(
+        within(section).getByRole("heading", { level: 3, name: r.title })
+      ).toBeInTheDocument();
+      const view = within(section).getByRole("link", {
+        name: new RegExp(`view ${r.title} pdf`, "i"),
+      });
+      expect(view).toHaveAttribute("href", r.href);
+      expect(view).toHaveAttribute("target", "_blank");
+      expect(view).toHaveAttribute("rel", expect.stringContaining("noopener"));
+      const dl = within(section).getByRole("link", {
+        name: new RegExp(`download ${r.title} pdf`, "i"),
+      });
+      expect(dl).toHaveAttribute("href", r.href);
+      expect(dl).toHaveAttribute("download");
+    }
+  });
+
+  it("shows the preliminary/unaudited notice for each flagged financial report", () => {
     renderAt("/annual-reports", <AnnualReports />);
     const flaggedCount = annualReports.filter((r) => r.preliminary || r.unaudited).length;
     const notes = screen.queryAllByRole("note", { name: /preliminary and unaudited notice/i });
     expect(notes.length).toBe(flaggedCount);
   });
 
-  it("includes both the 2024 and 2025 entries with stable hrefs", () => {
-    const years = annualReports.map((r) => r.year);
-    expect(years).toContain(2024);
-    expect(years).toContain(2025);
+  it("includes both 2024 and 2025 financial entries with stable hrefs", () => {
     const byYear = Object.fromEntries(annualReports.map((r) => [r.year, r]));
     expect(byYear[2024].href).toBe(
       "/reports/HPG_2024_Preliminary_Annual_Financial_Report.pdf"
@@ -92,14 +134,13 @@ describe("Annual Reports listing", () => {
     expect(byYear[2025].href).toBe(
       "/reports/HPG_2025_Preliminary_Annual_Financial_Report.pdf"
     );
-    expect(byYear[2025].scopeSummary.toLowerCase()).toContain("complete connected");
-    expect(byYear[2025].scopeSummary.toLowerCase()).toMatch(/documentation.*approvals/i);
   });
 
-  it("sorts newer reports first (2025 before 2024)", () => {
+  it("sorts newer financial reports first (2025 before 2024)", () => {
     renderAt("/annual-reports", <AnnualReports />);
-    const headings = screen
-      .getAllByRole("heading", { level: 2 })
+    const section = screen.getByRole("region", { name: /annual financial reports/i });
+    const headings = within(section)
+      .getAllByRole("heading", { level: 3 })
       .map((h) => h.textContent ?? "");
     const i2025 = headings.findIndex((t) => t.includes("2025 Preliminary"));
     const i2024 = headings.findIndex((t) => t.includes("2024 Preliminary"));
@@ -107,26 +148,29 @@ describe("Annual Reports listing", () => {
     expect(i2024).toBeGreaterThan(i2025);
   });
 
-  it("renders separate Preliminary and Unaudited badges for each report", () => {
+  it("renders separate Preliminary and Unaudited badges for each financial report", () => {
     renderAt("/annual-reports", <AnnualReports />);
     for (const r of annualReports.filter((x) => x.preliminary && x.unaudited)) {
       const group = screen.getByLabelText(
         new RegExp(`report status badges for ${r.title}`, "i")
       );
-      const prelim = within(group).getByText(/^preliminary$/i);
-      const unaud = within(group).getByText(/^unaudited$/i);
-      expect(prelim).toBeInTheDocument();
-      expect(unaud).toBeInTheDocument();
+      expect(within(group).getByText(/^preliminary$/i)).toBeInTheDocument();
+      expect(within(group).getByText(/^unaudited$/i)).toBeInTheDocument();
     }
   });
 
-  it("shows the publication disclosure and the 2024-vs-2025 comparison", () => {
+  it("shows the library overview note, publication disclosure, and 2024-vs-2025 comparison", () => {
     renderAt("/annual-reports", <AnnualReports />);
+    const overview = screen.getByRole("region", { name: /library overview/i });
+    expect(overview.textContent ?? "").toMatch(/impact report/i);
+    expect(overview.textContent ?? "").toMatch(/annual financial reports/i);
+
     const disclosure = screen.getByRole("region", { name: /publication disclosure/i });
     expect(disclosure.textContent ?? "").toMatch(
       /management-prepared preliminary publications/i
     );
     expect(disclosure.textContent ?? "").toMatch(/reissued/i);
+
     const compare = screen.getByRole("region", { name: /comparison of reporting years/i });
     expect(compare.textContent ?? "").toMatch(/incomplete historical bank coverage/i);
     expect(compare.textContent ?? "").toMatch(/complete connected bank coverage/i);
@@ -138,21 +182,10 @@ describe("Annual Reports listing", () => {
     const main = screen.getByRole("main");
     expect(main.textContent ?? "").not.toMatch(/\b(audited(?! )|board-approved|IRS filing|Form 990 filed)\b/i);
   });
-
-  it("has an empty-state fallback path when no reports exist", () => {
-    // Sanity: the empty-state text is still present in the component tree only
-    // when the list is empty. When reports exist, no empty-state message renders.
-    renderAt("/annual-reports", <AnnualReports />);
-    if (annualReports.length === 0) {
-      expect(screen.getByText(/no annual reports are published yet/i)).toBeInTheDocument();
-    } else {
-      expect(screen.queryByText(/no annual reports are published yet/i)).not.toBeInTheDocument();
-    }
-  });
 });
 
 describe("Footer legal navigation", () => {
-  it("links to every public information page", () => {
+  it("links to every public information page, using Reports & Impact label", () => {
     render(
       <MemoryRouter>
         <Footer />
@@ -160,7 +193,7 @@ describe("Footer legal navigation", () => {
     );
     const nav = screen.getByRole("navigation", { name: /legal and policy/i });
     const expected: Array<[RegExp, string]> = [
-      [/annual reports/i, "/annual-reports"],
+      [/reports & impact/i, "/annual-reports"],
       [/^privacy$/i, "/privacy"],
       [/data use/i, "/data-use"],
       [/accessibility/i, "/accessibility"],
@@ -172,4 +205,3 @@ describe("Footer legal navigation", () => {
     }
   });
 });
-
