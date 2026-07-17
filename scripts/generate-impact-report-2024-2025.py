@@ -565,30 +565,32 @@ story.append(Paragraph(
     "numeric scores are assigned. Status labels reflect the current state of "
     "documented, auditable records.", body))
 
+_cell = ParagraphStyle("cell", parent=body, fontSize=9.5, leading=12, spaceAfter=0)
+def _p(s): return Paragraph(s, _cell)
 evidence_rows = [
-    ["Financial stewardship", "Strong",
-     "Connected bank history, reconciliations, and functional classification "
-     "in place for 2025; controls maturing."],
-    ["Portfolio and partnerships", "Established",
-     "Sponsored-project portfolio identified and tracked; onboarding and "
-     "delivery stages vary by partner."],
-    ["Youth leadership delivery", "Documented",
-     "GYLFH curriculum, summit, and reflections are documented; unique "
-     "participant metrics are not yet standardized."],
-    ["Organizational capacity", "Documented",
-     "Executive, specialist, regional, and board functions are established "
-     "and identifiable."],
-    ["Partner-level outputs", "Partial",
-     "Outputs exist for some partners; standardized quarterly reporting is "
-     "not yet organization-wide."],
-    ["Beneficiary-level outcomes", "Developing",
-     "Individual outcome data is not consistently captured across "
-     "initiatives; a priority for 2026."],
+    [_p("Financial stewardship"), _p("Strong"),
+     _p("Connected bank history, reconciliations, and functional "
+        "classification in place for 2025; controls maturing.")],
+    [_p("Portfolio and partnerships"), _p("Established"),
+     _p("Sponsored-project portfolio identified and tracked; onboarding "
+        "and delivery stages vary by partner.")],
+    [_p("Youth leadership delivery"), _p("Documented"),
+     _p("GYLFH curriculum, summit, and reflections are documented; unique "
+        "participant metrics are not yet standardized.")],
+    [_p("Organizational capacity"), _p("Documented"),
+     _p("Executive, specialist, regional, and board functions are "
+        "established and identifiable.")],
+    [_p("Partner-level outputs"), _p("Partial"),
+     _p("Outputs exist for some partners; standardized quarterly reporting "
+        "is not yet organization-wide.")],
+    [_p("Beneficiary-level outcomes"), _p("Developing"),
+     _p("Individual outcome data is not consistently captured across "
+        "initiatives; a priority for 2026.")],
 ]
 story.append(data_table(
     ["Area", "Status", "What this status means"],
     evidence_rows,
-    col_widths=[1.9 * inch, 1.1 * inch, 3.75 * inch],
+    col_widths=[1.9 * inch, 1.05 * inch, 3.8 * inch],
 ))
 story.append(PageBreak())
 
