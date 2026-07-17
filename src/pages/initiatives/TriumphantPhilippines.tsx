@@ -108,6 +108,21 @@ export default function TriumphantPhilippines() {
             </Card>
           </div>
 
+          {/* Original recovery photographs from humanitypathwaysglobal.com */}
+          <h2 className="mt-16 font-display text-2xl font-bold text-foreground text-center">From affected communities</h2>
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              { src: "/images/original-hpg/IMG_20250520_161223-b2dbe75b.jpg", alt: "Community members in a flood-affected area of the Philippines documented by Triumphant Philippines partners." },
+              { src: "/images/original-hpg/IMG_20250520_161413-5b9bad87.jpg", alt: "Rebuilding activity supported by Triumphant Philippines recovery partners." },
+              { src: "/images/original-hpg/Messenger_creation_671113942474140-d8758d83.jpeg", alt: "Triumphant Philippines partner-network coordination photograph." },
+              { src: "/images/original-hpg/Messenger_creation_864E3535-75F6-4CAA-9932-F5-125c0fd7.jpeg", alt: "Triumphant Philippines partner-network coordination photograph." },
+            ].map((p) => (
+              <div key={p.src} className="overflow-hidden rounded-md bg-muted aspect-[4/3]">
+                <img src={p.src} alt={p.alt} width={800} height={600} loading="lazy" decoding="async" className="h-full w-full object-cover object-center" />
+              </div>
+            ))}
+          </div>
+
           {/* CTA */}
           <div className="mt-12 text-center">
             <Button asChild size="lg">
