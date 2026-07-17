@@ -63,7 +63,7 @@ describe("Annual Reports listing", () => {
     renderAt("/annual-reports", <AnnualReports />);
     for (const r of annualReports) {
       expect(screen.getByRole("heading", { level: 2, name: r.title })).toBeInTheDocument();
-      expect(screen.getByText((_, node) => node?.textContent?.includes(`Reporting period: ${r.period}`) ?? false)).toBeTruthy();
+      expect(screen.getAllByText((_, node) => node?.textContent?.includes(`Reporting period: ${r.period}`) ?? false).length).toBeGreaterThan(0);
       const view = screen.getByRole("link", { name: new RegExp(`view ${r.title} pdf`, "i") });
       expect(view).toHaveAttribute("href", r.href);
       expect(view).toHaveAttribute("target", "_blank");
