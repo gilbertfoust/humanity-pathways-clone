@@ -471,9 +471,9 @@ story.append(Paragraph(
     "activity. Known liabilities and preliminary net assets are shown as "
     "assembled from approved accrual and noncash entries.",
     body))
-pos_rows = [[k, fmt_money(v), ""] for k, v in POSITION.items()]
+pos_rows = [[k, fmt_money(v)] for k, v in POSITION.items()]
 story.append(money_table(
-    ["Line Item", "Amount (USD)", ""],
+    ["Line Item", "Amount (USD)"],
     pos_rows,
 ))
 
@@ -481,12 +481,12 @@ story.append(Paragraph("Noncash Financing Disclosure", h2))
 story.append(Paragraph(
     "HPG-recognized expenses funded outside of the operating bank account "
     "during 2024:", body))
-nc_rows = [[k, fmt_money(v), ""] for k, v in NONCASH_FINANCING]
+nc_rows = [[k, fmt_money(v)] for k, v in NONCASH_FINANCING]
 story.append(money_table(
-    ["Source", "Amount (USD)", ""],
+    ["Source", "Amount (USD)"],
     nc_rows,
     total_row=["Total Noncash / Off-Bank Financing",
-               fmt_money(sum(v for _, v in NONCASH_FINANCING)), ""],
+               fmt_money(sum(v for _, v in NONCASH_FINANCING))],
 ))
 story.append(PageBreak())
 
