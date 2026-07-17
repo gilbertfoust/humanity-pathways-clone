@@ -72,8 +72,12 @@ export default function WhoWeAre() {
               <Link to={card.link} className="block overflow-hidden rounded-sm">
                 <img
                   src={card.image}
-                  alt={card.title}
-                  className="aspect-square w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  alt={card.alt}
+                  width={800}
+                  height={800}
+                  loading={i === 0 ? "eager" : "lazy"}
+                  decoding="async"
+                  className="aspect-square w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
                 />
               </Link>
               <h3 className="mt-6 font-display text-2xl font-medium text-foreground">
