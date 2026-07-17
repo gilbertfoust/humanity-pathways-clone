@@ -6,6 +6,26 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Mail, Droplets, Sun, TreePine, Stethoscope, Wheat, Zap } from "lucide-react";
 
+// Original MegaBridge Kenya photographs recovered from humanitypathwaysglobal.com.
+const originalPhotos = [
+  {
+    src: "/images/original-hpg/IMG_20180611_120650_1-4c756518.jpg",
+    alt: "Megabridge Foundation team meeting with a Kenyan community group in the field.",
+  },
+  {
+    src: "/images/original-hpg/IMG_20180525_125223_1-0b9f5ba8.jpg",
+    alt: "Megabridge Foundation program participants working together on a rural development activity in Kenya.",
+  },
+  {
+    src: "/images/original-hpg/IMG_20180731_152029-f5c1613f.jpg",
+    alt: "Volunteers and community members supporting a Megabridge Kenya program.",
+  },
+  {
+    src: "/images/original-hpg/local-man-working-in-teh-forest-300x206-cbf30131.jpg",
+    alt: "Community forestry worker supported by Megabridge Kenya reforestation programs.",
+  },
+];
+
 const projects = [
   { icon: <Droplets className="h-6 w-6 text-accent" />, title: "Gatumbi Water Project", desc: "Bringing clean water to 3,000 people with minimal environmental waste and community-managed operations." },
   { icon: <Sun className="h-6 w-6 text-accent" />, title: "Solar Panel Access Project", desc: "Providing 10,000 households with affordable clean energy using a flexible daily PAYG model." },
@@ -57,6 +77,24 @@ export default function MegaBridgeKenya() {
                   </CardContent>
                 </Card>
               </motion.div>
+            ))}
+          </div>
+
+          {/* Original program photos from humanitypathwaysglobal.com */}
+          <h2 className="mt-16 font-display text-2xl font-bold text-foreground text-center">From the Field</h2>
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {originalPhotos.map((p) => (
+              <div key={p.src} className="overflow-hidden rounded-md bg-muted aspect-[4/3]">
+                <img
+                  src={p.src}
+                  alt={p.alt}
+                  width={800}
+                  height={600}
+                  loading="lazy"
+                  decoding="async"
+                  className="h-full w-full object-cover object-center"
+                />
+              </div>
             ))}
           </div>
 

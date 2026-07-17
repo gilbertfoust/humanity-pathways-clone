@@ -1,13 +1,17 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 
-import umbrellaImg from "@/assets/who-umbrella.jpg";
-import teamImg from "@/assets/who-team.jpg";
-import youthImg from "@/assets/who-youth.jpg";
+// Original photographs recovered from humanitypathwaysglobal.com — see
+// src/data/originalSiteImageInventory.ts.
+const umbrellaImg =
+  "/images/original-hpg/1000_F_435350274_nEZviI4FPBeYBHMnspDdsbIW3o9bC-cb0eb2a7.jpg";
+const teamImg = "/images/original-hpg/Humanity-Pathways-Global-d5ce2089.jpg";
+const youthImg = "/images/original-hpg/AdobeStock_283724247-685fb4f3.jpeg";
 
 const cards = [
   {
     image: umbrellaImg,
+    alt: "The HPG Umbrella — hands lifted around an open umbrella representing shared shelter and community protection.",
     title: "The HPG Umbrella",
     description:
       "At Humanity Pathways Global, our commitment goes beyond basic education to include vocational training and leadership development, empowering communities to overcome economic and social inequalities. Through global partnerships we strive to ensure that essential services are accessible to all.",
@@ -16,6 +20,7 @@ const cards = [
   },
   {
     image: teamImg,
+    alt: "Humanity Pathways Global team gathered together in the original HPG group photograph.",
     title: "Our Team",
     description:
       "Meet the driving force behind Humanity Pathways Global — our dedicated team. Comprised of passionate educators, visionary leaders, and community advocates, our team is united by a common goal: to empower and uplift. Each member brings unique expertise and an unwavering commitment to our mission.",
@@ -24,6 +29,7 @@ const cards = [
   },
   {
     image: youthImg,
+    alt: "Young leaders raising their hands in celebration, representing the Global Youth Leaders for Humanity initiative.",
     title: "Global Youth Leaders For Humanity",
     description:
       "Global Youth Leaders for Humanity (GYLFH) is our first initiative under the HPG umbrella to mold the next generation of world changers. Focused on cultivating skills in leadership, diplomacy, and social advocacy, GYLFH prepares young leaders to tackle global challenges head-on.",
@@ -66,8 +72,12 @@ export default function WhoWeAre() {
               <Link to={card.link} className="block overflow-hidden rounded-sm">
                 <img
                   src={card.image}
-                  alt={card.title}
-                  className="aspect-square w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  alt={card.alt}
+                  width={800}
+                  height={800}
+                  loading={i === 0 ? "eager" : "lazy"}
+                  decoding="async"
+                  className="aspect-square w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
                 />
               </Link>
               <h3 className="mt-6 font-display text-2xl font-medium text-foreground">

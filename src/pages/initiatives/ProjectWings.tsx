@@ -15,6 +15,20 @@ export default function ProjectWings() {
       <Navbar />
       <PageHero title="Project Wings" subtitle="Soaring Beyond Survival • Chicago, USA" />
 
+      <section className="bg-background pt-10">
+        <div className="mx-auto max-w-3xl px-4">
+          <img
+            src="/images/original-hpg/ChatGPT-Image-Nov-28-2025-01_00_44-PM-e098d429.png"
+            alt="Project Wings Soaring — original illustration published on humanitypathwaysglobal.com representing recovery, reconnection, and job readiness."
+            width={1200}
+            height={800}
+            loading="lazy"
+            decoding="async"
+            className="mx-auto w-full max-w-xl rounded-md object-contain"
+          />
+        </div>
+      </section>
+
       <section className="bg-background py-16">
         <div className="mx-auto max-w-5xl px-4">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center max-w-3xl mx-auto">

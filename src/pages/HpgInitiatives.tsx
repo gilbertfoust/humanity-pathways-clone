@@ -54,6 +54,19 @@ export default function HpgInitiatives() {
 
       <section className="bg-background py-16">
         <div className="mx-auto max-w-6xl px-4">
+          {/* Original initiatives illustration from humanitypathwaysglobal.com */}
+          <div className="mb-10 flex justify-center">
+            <img
+              src="/images/original-hpg/ChatGPT-Image-Jun-16-2026-11_07_52-PM-48c9990c.png"
+              alt="Humanity Pathways Global initiatives illustration published on humanitypathwaysglobal.com — hands and community iconography representing programs across four continents."
+              width={1024}
+              height={512}
+              loading="lazy"
+              decoding="async"
+              className="w-full max-w-2xl rounded-md object-contain"
+            />
+          </div>
+
           {/* Filter Tabs */}
           <div className="mb-10 flex flex-wrap justify-center gap-2">
             {filters.map((f) => (
