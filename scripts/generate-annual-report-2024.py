@@ -421,13 +421,13 @@ story.append(Paragraph(
     body))
 story.append(Spacer(1, 0.1 * inch))
 story.append(money_table(
-    ["Line Item", "Amount (USD)", ""],
+    ["Line Item", "Amount (USD)"],
     [
-        ["Known Revenue", fmt_money(REVENUE_TOTAL), ""],
-        ["Known Expenses", fmt_money(EXPENSE_TOTAL), ""],
+        ["Known Revenue", fmt_money(REVENUE_TOTAL)],
+        ["Known Expenses", fmt_money(EXPENSE_TOTAL)],
     ],
     total_row=["Preliminary Change in Net Assets",
-               fmt_money(CHANGE_IN_NET_ASSETS), ""],
+               fmt_money(CHANGE_IN_NET_ASSETS)],
 ))
 
 story.append(Paragraph("Expenses by Natural Category", h2))
