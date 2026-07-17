@@ -67,7 +67,7 @@ describe("Per-route SEO metadata", () => {
     unmount();
 
     renderWith("/annual-reports", <div>reports</div>);
-    await waitFor(() => expect(document.title).toMatch(/Annual Reports/));
+    await waitFor(() => expect(document.title).toMatch(/Reports & Impact/));
     expect(
       document.querySelector('link[rel="canonical"]')?.getAttribute("href")
     ).toBe(`${SITE_URL}/annual-reports`);
