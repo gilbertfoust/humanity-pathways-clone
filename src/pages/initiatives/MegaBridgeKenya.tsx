@@ -80,6 +80,24 @@ export default function MegaBridgeKenya() {
             ))}
           </div>
 
+          {/* Original program photos from humanitypathwaysglobal.com */}
+          <h2 className="mt-16 font-display text-2xl font-bold text-foreground text-center">From the Field</h2>
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {originalPhotos.map((p) => (
+              <div key={p.src} className="overflow-hidden rounded-md bg-muted aspect-[4/3]">
+                <img
+                  src={p.src}
+                  alt={p.alt}
+                  width={800}
+                  height={600}
+                  loading="lazy"
+                  decoding="async"
+                  className="h-full w-full object-cover object-center"
+                />
+              </div>
+            ))}
+          </div>
+
           {/* Impact */}
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mt-16 rounded-lg bg-primary p-8">
             <h2 className="font-display text-2xl font-bold text-primary-foreground">Our Impact</h2>
