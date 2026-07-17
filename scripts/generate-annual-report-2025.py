@@ -287,6 +287,10 @@ def notice_block() -> Table:
 
 
 def kv_table(rows: list[tuple[str, str]]) -> Table:
+    key_style = ParagraphStyle("kvk", parent=body, fontName="Helvetica-Bold",
+                                fontSize=10, leading=13, textColor=PRIMARY_DARK)
+    val_style = ParagraphStyle("kvv", parent=body, fontSize=10, leading=13)
+    rows = [[Paragraph(k, key_style), Paragraph(v, val_style)] for k, v in rows]
     t = Table(rows, colWidths=[3.2 * inch, 3.05 * inch])
     t.setStyle(TableStyle([
         ("FONT", (0, 0), (-1, -1), "Helvetica", 10),
