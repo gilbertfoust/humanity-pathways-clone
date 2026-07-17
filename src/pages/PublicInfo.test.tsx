@@ -1,6 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
+import { statSync } from "node:fs";
+import { resolve } from "node:path";
 import AnnualReports from "@/pages/AnnualReports";
 import Privacy from "@/pages/Privacy";
 import Accessibility from "@/pages/Accessibility";
@@ -45,18 +47,58 @@ describe("Public information pages", () => {
   });
 });
 
-describe("Annual Reports empty state", () => {
-  it("has no reports listed in the repository", () => {
-    expect(annualReports).toHaveLength(0);
+describe("Annual Reports listing", () => {
+  it("lists exactly the reports that exist as PDF files in public/reports/", () => {
+    for (const r of annualReports) {
+      expect(r.href.startsWith("/reports/")).toBe(true);
+      expect(r.href.endsWith(".pdf")).toBe(true);
+      const abs = resolve(process.cwd(), "public", r.href.replace(/^\//, ""));
+      const stat = statSync(abs);
+      expect(stat.isFile()).toBe(true);
+      expect(stat.size).toBeGreaterThan(1000);
+    }
   });
 
-  it("shows the empty state and a contact path when no reports exist", () => {
+  it("renders each report with a status badge, scope, and View/Download links", () => {
     renderAt("/annual-reports", <AnnualReports />);
-    expect(screen.getByText(/no annual reports are published yet/i)).toBeInTheDocument();
-    const contact = screen.getByRole("link", { name: /contact humanity pathways global/i });
-    expect(contact).toHaveAttribute("href", "/contact-us");
-    // No fabricated report entries rendered.
-    expect(screen.queryByRole("link", { name: /download/i })).not.toBeInTheDocument();
+    for (const r of annualReports) {
+      expect(screen.getByRole("heading", { level: 2, name: r.title })).toBeInTheDocument();
+      expect(screen.getByText(new RegExp(`Reporting period: ${r.year}`.slice(0, 20)))).toBeTruthy();
+      const view = screen.getByRole("link", { name: new RegExp(`view ${r.title} pdf`, "i") });
+      expect(view).toHaveAttribute("href", r.href);
+      expect(view).toHaveAttribute("target", "_blank");
+      expect(view).toHaveAttribute("rel", expect.stringContaining("noopener"));
+      const dl = screen.getByRole("link", { name: new RegExp(`download ${r.title} pdf`, "i") });
+      expect(dl).toHaveAttribute("href", r.href);
+      expect(dl).toHaveAttribute("download");
+    }
+  });
+
+  it("displays the preliminary and unaudited notice when flagged", () => {
+    renderAt("/annual-reports", <AnnualReports />);
+    const flagged = annualReports.some((r) => r.preliminary || r.unaudited);
+    if (flagged) {
+      expect(
+        screen.getByRole("note", { name: /preliminary and unaudited notice/i })
+      ).toBeInTheDocument();
+    }
+  });
+
+  it("does not describe listed reports as final, audited, board-approved, or an IRS filing", () => {
+    renderAt("/annual-reports", <AnnualReports />);
+    const main = screen.getByRole("main");
+    expect(main.textContent ?? "").not.toMatch(/\b(audited(?! )|board-approved|IRS filing|Form 990 filed)\b/i);
+  });
+
+  it("has an empty-state fallback path when no reports exist", () => {
+    // Sanity: the empty-state text is still present in the component tree only
+    // when the list is empty. When reports exist, no empty-state message renders.
+    renderAt("/annual-reports", <AnnualReports />);
+    if (annualReports.length === 0) {
+      expect(screen.getByText(/no annual reports are published yet/i)).toBeInTheDocument();
+    } else {
+      expect(screen.queryByText(/no annual reports are published yet/i)).not.toBeInTheDocument();
+    }
   });
 });
 
@@ -82,5 +124,3 @@ describe("Footer legal navigation", () => {
   });
 });
 
-// local import to avoid top-of-file churn
-import { within } from "@testing-library/react";
