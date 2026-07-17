@@ -306,7 +306,7 @@ def make_pie() -> Drawing:
     d.add(String(0, 2.4 * inch, "Functional Expense Allocation (%)",
                  fontName="Helvetica-Bold", fontSize=11, fillColor=PRIMARY))
     pie = Pie()
-    pie.x = 20
+    pie.x = 90
     pie.y = 10
     pie.width = 170
     pie.height = 170
