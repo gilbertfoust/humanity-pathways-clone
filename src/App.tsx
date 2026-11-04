@@ -18,6 +18,7 @@ import SponsorshipApplication from "./pages/SponsorshipApplication.tsx";
 import BoardApplication from "./pages/BoardApplication.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import GYLFH from "./pages/initiatives/GYLFH.tsx";
+import CentreForCare from "./pages/initiatives/CentreForCare.tsx";
 import NazareneMission from "./pages/initiatives/NazareneMission.tsx";
 import MegaBridgeKenya from "./pages/initiatives/MegaBridgeKenya.tsx";
 import SanteVieMeilleure from "./pages/initiatives/SanteVieMeilleure.tsx";
@@ -69,6 +70,7 @@ const App = () => (
             <Route path="/sponsorship-application" element={<SponsorshipApplication />} />
             <Route path="/board-application" element={<BoardApplication />} />
             <Route path="/gylfh" element={<GYLFH />} />
+            <Route path="/centre-for-care" element={<CentreForCare />} />
             <Route path="/nazarene-mission" element={<NazareneMission />} />
             <Route path="/megabridge-kenya" element={<MegaBridgeKenya />} />
             <Route path="/sante-vie-meilleure" element={<SanteVieMeilleure />} />
