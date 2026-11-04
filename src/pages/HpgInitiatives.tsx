@@ -25,6 +25,7 @@ import humaneLogo from "@/assets/logos/humane-initiative-logo.png";
 const filters = ["All", "Africa", "USA", "Asia / Global"];
 
 const initiatives = [
+  { name: "Centre for Care", logo: null, location: "Gokwe, Zimbabwe", region: "Africa", desc: "Supporting school fees for vulnerable children and a supplementary school feeding programme.", href: "/centre-for-care", donateUrl: "https://www.zeffy.com/en-US/donation-form/centre-for-care" },
   { name: "GYLFH", logo: gylfhLogo, location: "International", region: "Asia / Global", desc: "Building ethical, globally minded young leaders through workshops and advocacy across four continents.", href: "/gylfh" },
   { name: "Youth Development Program", logo: nazareneLogo, location: "Luanda, Angola", region: "Africa", desc: "Empowering Angolan youth through leadership, education, and advocacy initiatives.", href: "/nazarene-mission" },
   { name: "MegaBridge Kenya", logo: megabridgeLogo, location: "Kenya", region: "Africa", desc: "Strengthening educational infrastructure and community empowerment through capacity building in East Africa.", href: "/megabridge-kenya" },
@@ -97,18 +98,12 @@ export default function HpgInitiatives() {
                   to={item.href}
                   className="flex h-full flex-col rounded-lg border border-border bg-card p-6 shadow-sm transition-shadow hover:shadow-md"
                 >
-                  <img
-                    src={item.logo}
-                    alt={`${item.name} logo`}
-                    className="h-16 w-16 object-contain"
-                    loading="lazy"
-                    width={64}
-                    height={64}
-                  />
+                  {item.logo ? <img src={item.logo} alt={`${item.name} logo`} className="h-16 w-16 object-contain" loading="lazy" width={64} height={64} /> : <div className="flex h-16 w-16 items-center justify-center rounded bg-primary/10 text-primary font-bold" aria-hidden="true">CFC</div>}
                   <p className="mt-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">{item.location}</p>
                   <h3 className="mt-1 font-display text-xl font-bold text-foreground">{item.name}</h3>
                   <p className="mt-2 flex-1 text-sm text-muted-foreground">{item.desc}</p>
                   <span className="mt-4 text-xs font-semibold uppercase tracking-wider text-primary">Learn More →</span>
+                  {item.donateUrl && <span className="mt-2 text-xs font-semibold uppercase tracking-wider text-primary">Dedicated Zeffy donation campaign available</span>}
                 </Link>
               </motion.div>
             ))}
