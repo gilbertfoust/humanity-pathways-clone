@@ -94,17 +94,23 @@ export default function HpgInitiatives() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
               >
-                <Link
-                  to={item.href}
-                  className="flex h-full flex-col rounded-lg border border-border bg-card p-6 shadow-sm transition-shadow hover:shadow-md"
-                >
+                <div className="flex h-full flex-col rounded-lg border border-border bg-card p-6 shadow-sm transition-shadow hover:shadow-md">
                   {item.logo ? <img src={item.logo} alt={`${item.name} logo`} className="h-16 w-16 object-contain" loading="lazy" width={64} height={64} /> : <div className="flex h-16 w-16 items-center justify-center rounded bg-primary/10 text-primary font-bold" aria-hidden="true">CFC</div>}
                   <p className="mt-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">{item.location}</p>
                   <h3 className="mt-1 font-display text-xl font-bold text-foreground">{item.name}</h3>
                   <p className="mt-2 flex-1 text-sm text-muted-foreground">{item.desc}</p>
-                  <span className="mt-4 text-xs font-semibold uppercase tracking-wider text-primary">Learn More →</span>
-                  {item.donateUrl && <span className="mt-2 text-xs font-semibold uppercase tracking-wider text-primary">Dedicated Zeffy donation campaign available</span>}
-                </Link>
+                  <Link to={item.href} className="mt-4 text-xs font-semibold uppercase tracking-wider text-primary">Learn More →</Link>
+                  {item.donateUrl && (
+                    <a
+                      href={item.donateUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-3 inline-flex items-center justify-center rounded bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90"
+                    >
+                      Donate through Zeffy
+                    </a>
+                  )}
+                </div>
               </motion.div>
             ))}
           </div>
