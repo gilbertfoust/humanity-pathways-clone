@@ -42,8 +42,20 @@ jobs:
             echo "VITE_BASE_PATH=/${{ github.event.repository.name }}/" >> "$GITHUB_ENV"
           fi
 
+      # Recover from a stale committed lockfile without changing package.json.
+      # After deployment, the regenerated lockfile can be committed for frozen installs.
+      - name: Synchronize dependency lock
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --no-audit --no-fund
+
+      - name: Export corrected lockfile
+        uses: actions/upload-artifact@v4
+        with:
+          name: synchronized-package-lock
+          path: package-lock.json
+          retention-days: 7
 
       - name: Build site
         run: npm run build
